@@ -1,5 +1,6 @@
 instruction reference:
 ../textdocs/programming-the-VM/SBTCVM-asm.txt
+../textdocs/instructionlist.txt
 assembler source: ../SBTCVM-asm2.py
 grep -n __ ../textdocs/programming-the-VM/* ../textdocs/*
 would like to fix assembler, it doesn't check syntax.
@@ -10,6 +11,12 @@ grep -n __ ../VMSYSTEM/ROMS/*.tasm ../ROMS/*.tasm ../ROMS/oldroms/*.tasm *.tasm
 
 big example:
 ../VMSYSTEM/ROMS/fib.tasm
+
+>>choose license
+
+what's this?
+../textdocs/IObanklist-full.txt
+../textdocs/IObanklist-summary.txt
 
 @@@@@@@@@@@@@@@@@
 @ HOWTO
@@ -23,6 +30,13 @@ stack1.tasm does it like this:
 	setdata;>stackpushme
 	romread1;>stackreg1bak
 	setdata;000000000;stackpushme
+what's ptread? it's not in -asm.txt.
+	../ROMS/invertdemo1.tasm:/ptread
+	also ptwri 2 lines down, then ptget, ptinc, 
+	and above, ptset.
+	ptset is opcode -0-0+-, but this appears 
+	3 times, with different data.
+	it's not in ../textdocs/instructionlist.txt either.
 
 ~ jumps, loops, conditionals
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -45,6 +59,17 @@ stack1.tasm:/stackdump
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ? :)
 
+
+~ trit manipulation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+offsetlen
+	../ROMS/testoffsetlen.tasm
+	../textdocs/programming-the-VM/SBTCVM-asm.txt:/offsetlen
+	../textdocs/programming-the-VM/offsetlength.txt
+	doesn't say whether it affects the next op only, 
+	or all future ops until re-set.
+
+
 @@@@@@@@@@@@@@@@@
 @ PROGRAMS
 
@@ -60,9 +85,8 @@ $ stack
 	vital! there is no stack and only single-level return. (continue.tasm)
 	already in very simple programs i'm finding 
 	i need to quickly save vars all the time.
-	$ stack1.tasm -- base with tests
-	> mostly done. working on stack dump.
-	- stack2.tasm -- interactive with tritin
+	$ stack1.tasm -- base with tests -- seems done
+	> stack2.tasm -- interactive with tritin
 7-seg display
 	for easy score display in games
 string handling
