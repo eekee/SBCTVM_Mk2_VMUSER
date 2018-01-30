@@ -1,11 +1,8 @@
 instruction reference:
 ../textdocs/programming-the-VM/SBTCVM-asm.txt
 assembler source: ../SBTCVM-asm2.py
-
-grep -n __ SBTCVM-asm.txt ../textdocs/programming-the-VM/* ../textdocs/*
-
-need to fix asm doc, hence my copy.
-would also like to fix assembler, it doesn't check syntax.
+grep -n __ ../textdocs/programming-the-VM/* ../textdocs/*
+would like to fix assembler, it doesn't check syntax.
 
 ../ROMS/
 ../VMSYSTEM/ROMS/
@@ -19,8 +16,16 @@ big example:
 
 techniques, not hardware access.
 
+~ emulate indirect addressing
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+stack1.tasm does it like this:
+	romread1;>stacktop
+	setdata;>stackpushme
+	romread1;>stackreg1bak
+	setdata;000000000;stackpushme
+
 ~ jumps, loops, conditionals
-~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 so important i'm putting them here.
 cmd|data|label
 	define label. data required in this case.
@@ -28,15 +33,16 @@ gotodata|>label
 	obvious
 gotoreg1
 	register index yay!
-	not used in any roms.
+	not used in any stock roms. works fine though.
 gotodataif|>label
 	jump if reg1 == reg2
 gotoifgreater|>label
 	jump if reg1 > reg2
 ../ROMS/addloop.tasm
+stack1.tasm:/stackdump
 
 ~ copy memory region
-~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ? :)
 
 @@@@@@@@@@@@@@@@@
@@ -46,7 +52,7 @@ ideas and actual work, the latter marked with '$'.
 to-do marked with '>'.
 
 ~ stock code
-~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 $ trit input
 	tritin.tasm
 	> fix namespace
@@ -66,7 +72,7 @@ string handling
 	decimal<->string conversion
 
 ~ simple programs
-~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 $ character set display
 	chars.tasm
 	> working on paged number:character display.
@@ -78,7 +84,7 @@ clock, analogue
 	easy enough with the vector graphics in the mini displays
 
 ~ games
-~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 simple: key response; single-pixel drawing; no timing; trivial generator
 	robots
 	black box
@@ -104,7 +110,7 @@ others from sgt puzzles:
 	???
 
 ~ complex programs
-~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 forth
 	forth.txt
 text editor
@@ -137,18 +143,18 @@ very low res:
 * _ x _ x 1-trit mono = _ trits = _% of a 'rom'
 
 ~ tritmaps
-~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 how to copy?
 there are pointer operations using r1. i'm sure it's possible using this.
 
 ~ drawing text
-~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 there's not much room.
 6x7 pixel chars = 19x11 colsXrows
 6x8 = 19x10
 
 ~ expansionism
-~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 i thought of taking the low res mono and 3x3-ing it.
 it would take up half (47%) of a 'rom'.
 it might be reasonable if one 'rom' is a display server.
@@ -157,7 +163,7 @@ non-square pixels might be more reasonable, but all this is still underwhelming.
 another trick: 2 trits encoding 3 pixels. i'm sure i'd hate it. :)
 
 ~ roms
-~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ../ROMS/invertdemo1.tasm
 	writes to display memory
 
