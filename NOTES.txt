@@ -1,10 +1,5 @@
->> ought to sort out git repo:
-	fork on github, pull, commit my asm txt changes, 
-	push, send pull request.
-
 instruction reference:
-cp ../textdocs/programming-the-VM/SBTCVM-asm.txt .
-my copy: SBTCVM-asm.txt
+../textdocs/programming-the-VM/SBTCVM-asm.txt
 assembler source: ../SBTCVM-asm2.py
 
 grep -n __ SBTCVM-asm.txt ../textdocs/programming-the-VM/* ../textdocs/*
