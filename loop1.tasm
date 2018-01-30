@@ -1,0 +1,25 @@
+# my first tasm!
+# loops, doing something simple.
+
+# there's no shift or rotate. i wanted to make a knight rider, *pout*.
+# multiply by 3 to shift left, divide to shift right. yay!
+# LOL this only does what i want if i use 00+00 not --+--
+
+setreg1;00000000+;overloop
+
+dumpreg1;000000000;leftloop
+setreg2;0000000+0
+multiply
+wait;:0.2
+setreg2;+00000000
+gotodataif;>nextloop
+gotodata;>leftloop
+
+setreg2;00000000+;nextloop
+dumpreg1;000000000;rightloop
+setreg2;0000000+0
+divide
+wait;:0.2
+setreg2;00000000+
+gotodataif;>overloop
+gotodata;>rightloop

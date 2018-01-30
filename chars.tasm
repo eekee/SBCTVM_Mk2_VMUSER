@@ -1,0 +1,80 @@
+# character set display
+# very very simple for now.
+
+gotodata;>start
+
+# 729 chars?
+#null;00+------;limit
+# no, just 96 :)
+null;000-0-0+-;limit
+
+setreg1;000------;start
+setdata;>tw;loop
+TTYwrite;000000000;tw
+setreg2;00000000+
+add
+romread2;>limit
+gotodataif;>done
+gotodata;>loop
+null;;done
+
+# i want to see the last two again, between markers
+TTYwrite;:enter
+TTYwrite;:>
+TTYwrite;000-0-00+
+TTYwrite;:<
+TTYwrite;:enter
+TTYwrite;:>
+TTYwrite;000-0-000
+TTYwrite;:<
+
+# -0-00+ (-269) is space
+# -0-000 (-270) is newline
+
+# and the beginning:
+TTYwrite;:enter
+TTYwrite;:>
+TTYwrite;000------
+TTYwrite;:<
+
+# yes it starts at -364 and counts up to -269. ok then.
+# -364 is mni of 6 trits (upper 3 trits ignored)
+
+userwait
+
+null;000------;count
+null;00000+0-+;pagelength
+null;000000000;linecount
+
+# >> i'm saving the count wrong
+
+romread1;>count;loop2
+dumpreg1
+TTYwrite;: 
+TTYwrite;: 
+TTYwrite;: 
+setdata;>tw2
+TTYwrite;000000000;tw2
+setreg1;>count
+
+romread1;>linecount
+setreg2;00000000+
+add
+romread2;>pagelength
+gotodataif;>pagebreak
+gotodata;>nobreak
+
+userwait;;pagebreak
+setreg1;000000000
+
+setdata;>linecount;nobreak
+setreg1;>count
+setreg2;00000000+
+add
+setdata;>count
+
+romread2;>limit
+gotodataif;>done2
+gotodata;>loop2
+
+stop;;done2

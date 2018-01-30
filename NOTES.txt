@@ -1,0 +1,175 @@
+>> ought to sort out git repo:
+	fork on github, pull, commit my asm txt changes, 
+	push, send pull request.
+
+instruction reference:
+cp ../textdocs/programming-the-VM/SBTCVM-asm.txt .
+my copy: SBTCVM-asm.txt
+assembler source: ../SBTCVM-asm2.py
+
+grep -n __ SBTCVM-asm.txt ../textdocs/programming-the-VM/* ../textdocs/*
+
+need to fix asm doc, hence my copy.
+would also like to fix assembler, it doesn't check syntax.
+
+../ROMS/
+../VMSYSTEM/ROMS/
+grep -n __ ../VMSYSTEM/ROMS/*.tasm ../ROMS/*.tasm ../ROMS/oldroms/*.tasm *.tasm
+
+big example:
+../VMSYSTEM/ROMS/fib.tasm
+
+@@@@@@@@@@@@@@@@@
+@ HOWTO
+
+techniques, not hardware access.
+
+~ jumps, loops, conditionals
+~~~~~~~~~~~~~~~
+so important i'm putting them here.
+cmd|data|label
+	define label. data required in this case.
+gotodata|>label
+	obvious
+gotoreg1
+	register index yay!
+	not used in any roms.
+gotodataif|>label
+	jump if reg1 == reg2
+gotoifgreater|>label
+	jump if reg1 > reg2
+../ROMS/addloop.tasm
+
+~ copy memory region
+~~~~~~~~~~~~~~~
+? :)
+
+@@@@@@@@@@@@@@@@@
+@ PROGRAMS
+
+ideas and actual work, the latter marked with '$'.
+to-do marked with '>'.
+
+~ stock code
+~~~~~~~~~~~~~~~
+$ trit input
+	tritin.tasm
+	> fix namespace
+$ stack
+	vital! there is no stack and only single-level return. (continue.tasm)
+	already in very simple programs i'm finding 
+	i need to quickly save vars all the time.
+	$ stack1.tasm -- base with tests
+	> mostly done. working on stack dump.
+	- stack2.tasm -- interactive with tritin
+7-seg display
+	for easy score display in games
+string handling
+	input from keyboard
+	output to tty
+	trits<->string conversion
+	decimal<->string conversion
+
+~ simple programs
+~~~~~~~~~~~~~~~
+$ character set display
+	chars.tasm
+	> working on paged number:character display.
+calculator, tty display
+calculator, graphical display
+clock, digital
+	7-seg in the mini color display
+clock, analogue
+	easy enough with the vector graphics in the mini displays
+
+~ games
+~~~~~~~~~~~~~~~
+simple: key response; single-pixel drawing; no timing; trivial generator
+	robots
+	black box
+simple running as above, but perhaps more coding work
+	hangman
+		word list needs composition and several routines.
+	unequal
+	towers
+	magnets
+	unruly
+	others from sgt puzzles
+		all need cursor and/or x/y addressing.
+other
+	snake
+		timing, key response, simple drawing
+	moon buggy
+		timing, key response, 'blitting' when the buggy jumps or crashes
+	
+get ideas for some above from bsd games:
+	https://cvsweb.openbsd.org/cgi-bin/cvsweb/src/games/
+	i think snake game is 'worm'.
+others from sgt puzzles:
+	???
+
+~ complex programs
+~~~~~~~~~~~~~~~
+forth
+	forth.txt
+text editor
+	with the forth
+binary computer emulator XD
+
+@@@@@@@@@@@@@@@@@
+@ KEYBOARD
+
+interrupt per key only, i think. ridiculous, but not painful.
+available keys: 
+	1-9 + - a-z space enter
+
+reuse or reference ../ROMS/keytest.tasm , it's got all the keys.
+i may as well write python code to generate my own keyboard interrupt table.
+
+DOC BUG:
+../textdocs/programming-the-VM/keyboard-inter.txt
+	does not give the asm names.
+	(it's not a useful document for me until i want to write an assembler)
+
+@@@@@@@@@@@@@@@@@
+@ FRAMEBUFFER GRAPHICS
+
+choice of low res or very low res. :)
+low res:
+* 114 x 81 x 1-trit mono = 9234 trits = 5% of a 'rom'
+* 114 x 81 x 3 trit color = 27702 trits = 16% of a 'rom'
+very low res:
+* _ x _ x 1-trit mono = _ trits = _% of a 'rom'
+
+~ tritmaps
+~~~~~~~~~~~~~~~
+how to copy?
+there are pointer operations using r1. i'm sure it's possible using this.
+
+~ drawing text
+~~~~~~~~~~~~~~~
+there's not much room.
+6x7 pixel chars = 19x11 colsXrows
+6x8 = 19x10
+
+~ expansionism
+~~~~~~~~~~~~~~~
+i thought of taking the low res mono and 3x3-ing it.
+it would take up half (47%) of a 'rom'.
+it might be reasonable if one 'rom' is a display server.
+it would allow 57x34 or 57x30 chars, depending on 6x7 or 6x8 char cell.
+non-square pixels might be more reasonable, but all this is still underwhelming.
+another trick: 2 trits encoding 3 pixels. i'm sure i'd hate it. :)
+
+~ roms
+~~~~~~~~~~~~~~~
+../ROMS/invertdemo1.tasm
+	writes to display memory
+
+@@@@@@@@@@@@@@@@@
+@ SIDE GRAPHICS
+
+@@@@@@@@@@@@@@@@@
+@ TTY
+
+72x27 or 72x54

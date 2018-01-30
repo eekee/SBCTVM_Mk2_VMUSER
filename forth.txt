@@ -1,0 +1,30 @@
+common words translated for limited keys:
+	:	def
+	;	ok
+	'	qu
+	[']	quo
+	.	d
+	.s	ds
+	"	str	read to '++s--', or read to '+' unless escaped with '-' or something.
+	."	dstr	ditto
+could instead make a key act as a shift toggle, but ugh! :)
+
+only 40 different chars can be entered by the keyboard.
+can i use that to simply pack a name into a smaller space?
+of course. do i want to? yes, memory is tight and cpu not too quick.
+prolly good to restrict to alpha only. 3 trits mcv is 27, for 26 chars and null.
+	1 data cell would hold 3 chars only. 3 cells, 9 chars. that's all right.
+
+what's the normal string representation?
+1 char per cell, 96 chars from mnv up.
+only 40 keys supported: a-z + - space enter.
+given mni of 6 trits (upper 3 trits ignored):
+	'a' to 'z'	mni to mni+25	-364 to -339	------ to ---++0
+	'-' 		mni+74  		-290			--++-+
+	'+' 		mni+77  		-287			--++0+
+	enter   	mni+94  		-270			-0-000
+	space   	mni+95  		-269			-0-00+
+
+forth source could be entered into the rom with 
+"textstart"..."textstop", just don't call it! :)
+any other text can too.

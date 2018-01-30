@@ -1,0 +1,28 @@
+# testing SBTCVM-asm.txt:/continue
+# there is no stack, but it seems it checks for unbalanced use anyway.
+
+textstart
+MAIN
+textstop
+gotodata;>sub1
+dumpreg1
+textstart
+END MAIN
+textstop
+#stop
+
+null;000000000;sub1
+textstart
+SUB ONE
+textstop
+gotodata;>sub2
+textstart
+SUB ONE AGAIN
+textstop
+continue
+
+null;000000000;sub2
+textstart
+SUB TWO
+textstop
+continue
