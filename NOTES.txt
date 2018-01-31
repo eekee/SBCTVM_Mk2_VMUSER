@@ -9,8 +9,11 @@ would like to fix assembler, it doesn't check syntax.
 ../VMSYSTEM/ROMS/
 grep -n __ ../VMSYSTEM/ROMS/*.tasm ../ROMS/*.tasm ../ROMS/oldroms/*.tasm *.tasm
 
-big example:
 ../VMSYSTEM/ROMS/fib.tasm
+	big example
+../ROMS/addloop.tasm
+	instruction speed test: 19682 * 5 = 98410 instructions in 3 seconds.
+	about 33kips then.
 
 >>choose license
 

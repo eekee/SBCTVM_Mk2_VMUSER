@@ -8,30 +8,23 @@
 # p   	pop and display number
 # d   	dump stack
 
-##############
-# revise below
-
-
 ### limits needs and details:
 
+## stack:
 # namespace:
 #	stack* push pop
 # optional:
 #	bstack* bpush bpop
-
 # push and pop reg1 only. use regswap etc. for reg2.
-
-# the routines don't preserve registers because that takes
-# extra space and time and is sometimes unneccessary.
-# the push routines (main and b) save reg1 out of necessity,
-# so if you need to preserve it you can omit the save.
-# restore it like this:
+# if needed, restore reg1 like this:
 #	romread1;>stackreg1bak
 
-# "stack" grows down. optional "bstack" grows up.
-# "push" is 10 instructions, "pop" 7.
-
-
+#>>>>>> to do:
+# remove stack1 test code except main stack dump
+# [remove b stack code]
+# copy in tritin
+# modify key_enter routine to push to stack
+# add p and d key routines
 
 gotodata;>stackinit
 
