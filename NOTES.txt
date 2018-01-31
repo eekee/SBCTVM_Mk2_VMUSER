@@ -80,11 +80,8 @@ to-do marked with '>'.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 $ trit input
 	tritin.tasm
-	> fix namespace
 $ stack
 	vital! there is no stack and only single-level return. (continue.tasm)
-	already in very simple programs i'm finding 
-	i need to quickly save vars all the time.
 	$ stack1.tasm -- base with tests -- seems done
 	> stack2.tasm -- interactive with tritin
 7-seg display

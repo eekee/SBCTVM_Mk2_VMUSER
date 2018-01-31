@@ -9,6 +9,13 @@
 # i don't know what a sophisticated mainloop would look like.
 # maybe interrupts only happen on gotos? i hope so.
 
+# apart from "key_enter", the interrupt routines write
+# the character to the tty last, so the user can see any
+# delay in execution. however, no delay is visible with
+# my core i5 host, and even trying to press two keys
+# at once does not result in miscalculation. perhaps
+# sbtcvm only checks for interrupts during goto.
+
 
 gotodata;>tritin_init
 
@@ -40,8 +47,7 @@ romread1;>tritin_reg1bak
 romread2;>tritin_reg2bak
 gotodata;>mainloop
 
-TTYwrite;:+;key_plus
-setdata;>tritin_reg1bak
+setdata;>tritin_reg1bak;key_plus
 copy2to1
 setdata;>tritin_reg2bak
 romread1;>tritin_number
@@ -52,10 +58,10 @@ add
 setdata;>tritin_number
 romread1;>tritin_reg1bak
 romread2;>tritin_reg2bak
+TTYwrite;:+
 gotodata;>mainloop
 
-TTYwrite;:-;key_minus
-setdata;>tritin_reg1bak
+setdata;>tritin_reg1bak;key_minus
 copy2to1
 setdata;>tritin_reg2bak
 romread1;>tritin_number
@@ -66,10 +72,10 @@ add
 setdata;>tritin_number
 romread1;>tritin_reg1bak
 romread2;>tritin_reg2bak
+TTYwrite;:-
 gotodata;>mainloop
 
-TTYwrite;:0;key_zero
-setdata;>tritin_reg1bak
+setdata;>tritin_reg1bak;key_zero
 copy2to1
 setdata;>tritin_reg2bak
 romread1;>tritin_number
@@ -78,4 +84,5 @@ multiply
 setdata;>tritin_number
 romread1;>tritin_reg1bak
 romread2;>tritin_reg2bak
+TTYwrite;:0
 gotodata;>mainloop

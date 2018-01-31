@@ -20,6 +20,10 @@
 # "stack" grows down. optional "bstack" grows up.
 # "push" is 10 instructions, "pop" 7.
 
+# the size of this file (compared with sbctvm stock troms)
+# makes me wonder if there was a time when even the stack
+# was considered bloatware. :)
+
 
 
 gotodata;>stackinit
