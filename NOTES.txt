@@ -92,8 +92,10 @@ $ stack
 string handling
 	input from keyboard
 	output to tty
-	trits<->string conversion
-	decimal<->string conversion
+	integer<->balanced ternary string conversion
+	integer<->decimal string conversion
+clear all keyboard interrupts
+directional movement key routines
 
 ~ simple programs
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

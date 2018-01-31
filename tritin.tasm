@@ -1,82 +1,81 @@
 # tritin -- by-trit number input routines
 
-# should prolly rename the locations to like tritin_reg1bak
+### limits needs and details:
 
-gotodata;>start
+# namespace:
+#	tritin_* key_*
 
-null;000000000;tritloc
-null;;reg1bak
-null;;reg2bak
+# the interrupts save registers, but cannot use "continue".
+# i don't know what a sophisticated mainloop would look like.
+# maybe interrupts only happen on gotos? i hope so.
 
-null;;start
 
-setkeyint;:+
-keyint;>plus
+gotodata;>tritin_init
+
+null;000000000;tritin_number
+null;;tritin_reg1bak
+null;;tritin_reg2bak
+
+setkeyint;:+;tritin_init
+keyint;>key_plus
 setkeyint;:0
-keyint;>zero
+keyint;>key_zero
 setkeyint;:-
-keyint;>minus
+keyint;>key_minus
 setkeyint;:enter
-keyint;>enter
+keyint;>key_enter
 
-#textstart
-#ready
-#textstop
 null;;mainloop
 gotodata;>mainloop
 
-null;;enter
-setdata;>reg1bak
+setdata;>tritin_reg1bak;key_enter
 copy2to1
-setdata;>reg2bak
-romread1;>tritloc
+setdata;>tritin_reg2bak
+romread1;>tritin_number
 dumpreg1
 TTYwrite;:enter
 setreg1;000000000
-setdata;>tritloc
-romread1;>reg1bak
-romread2;>reg2bak
+setdata;>tritin_number
+romread1;>tritin_reg1bak
+romread2;>tritin_reg2bak
 gotodata;>mainloop
 
-null;;plus
-TTYwrite;:+
-setdata;>reg1bak
+TTYwrite;:+;key_plus
+setdata;>tritin_reg1bak
 copy2to1
-setdata;>reg2bak
-romread1;>tritloc
+setdata;>tritin_reg2bak
+romread1;>tritin_number
 setreg2;0000000+0
 multiply
 setreg2;00000000+
 add
-setdata;>tritloc
-romread1;>reg1bak
-romread2;>reg2bak
+setdata;>tritin_number
+romread1;>tritin_reg1bak
+romread2;>tritin_reg2bak
 gotodata;>mainloop
 
-null;;minus
-TTYwrite;:-
-setdata;>reg1bak
+TTYwrite;:-;key_minus
+setdata;>tritin_reg1bak
 copy2to1
-setdata;>reg2bak
-romread1;>tritloc
+setdata;>tritin_reg2bak
+romread1;>tritin_number
 setreg2;0000000+0
 multiply
 setreg2;00000000-
 add
-setdata;>tritloc
-romread1;>reg1bak
-romread2;>reg2bak
+setdata;>tritin_number
+romread1;>tritin_reg1bak
+romread2;>tritin_reg2bak
 gotodata;>mainloop
 
-null;;zero
-TTYwrite;:0
-setdata;>reg1bak
+TTYwrite;:0;key_zero
+setdata;>tritin_reg1bak
 copy2to1
-setdata;>reg2bak
-romread1;>tritloc
+setdata;>tritin_reg2bak
+romread1;>tritin_number
 setreg2;0000000+0
 multiply
-setdata;>tritloc
-romread1;>reg1bak
-romread2;>reg2bak
+setdata;>tritin_number
+romread1;>tritin_reg1bak
+romread2;>tritin_reg2bak
 gotodata;>mainloop
