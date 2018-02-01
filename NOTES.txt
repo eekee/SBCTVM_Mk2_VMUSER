@@ -102,6 +102,34 @@ binary computer emulator XD
 
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@ WANTED
+
+not asking, keeping track of what i hope i can add some day.
+
+~ interruptable wait
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+probably the simplest key to sane interrupt handling.
+see 'threading' in the next section.
+
+~ save trom
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+probably the simplest way to get permanent storage.
+it'll overwrite, preserving data is the user's responsibility.
+i use git, or files can be copied of course, and in case of 
+disaster the original trom can be restored by assembling again.
+
+~ disassembler
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+to go with saving the trom. apart from disassembly itself, 
+its most useful function may be finding strings in the trom, 
+and translating them to ascii.
+i'm thinking it could remember the last data cells so long as 
+every one corresponds to a character. when non-character data 
+is encountered, if more than n cells are saved, they are written 
+into the disassembly in a format similar to textstart/textstop.
+
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 @ HOWTO
 
 techniques, not hardware access.
