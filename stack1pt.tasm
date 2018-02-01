@@ -1,0 +1,347 @@
+# stack routines with simple tests
+
+#>>>>>>>>>>>>>rewriting with pt*
+# to do:
+
+### limits needs and details:
+
+# namespace:
+#	stack* push pop
+# optional:
+#	bstack* bpush bpop
+
+# push and pop reg1 only. use regswap etc. for reg2.
+
+# the routines don't preserve registers because that takes
+# extra space and time and is sometimes unneccessary.
+# the push routines (main and b) save reg1 out of necessity,
+# so if you need to preserve it you can omit the save.
+# restore it like this:
+#	romread1;>stackreg1bak
+
+# "stack" grows down. optional "bstack" grows up.
+# "push" is 10 instructions, "pop" 7.
+
+# the size of this file (compared with sbctvm stock troms)
+# makes me wonder if there was a time when even the stack
+# was considered bloatware. :)
+
+
+
+gotodata;>stackinit
+
+# test data
+null;+0+0+0+0+;reg1pat1
+null;0+0+0+0+0;reg2pat1
+null;-0-0-0-0-;reg1pat2
+null;0-0-0-0-0;reg2pat2
+
+# stack pointer etc
+null;+++++++++;stackbase
+null;;stacktop
+null;;stackreg1bak
+null;+++------;bstackbase
+null;;bstacktop
+
+# some bstackbase values with space for
+# the 2 stacks and remaining memory:
+# +++------	728  		18955
+# ++-------	2186		17497
+# +--------	6560		13123
+
+
+############################
+### initialization
+
+# can't use 'continue' because it calls bpush.
+
+romread1;>stackbase;stackinit
+setdata;>stacktop
+# if not using bstack omit remainder
+romread1;>bstackbase
+setdata;>bstacktop
+# underflow marker for bstack, may help in debugging;
+# 2 lines doubly optional:
+setreg1;-+-+-+-+-
+gotodata;>bpush
+
+
+#######################
+### test code
+
+# with some usage examples commented
+
+textstart
+
+Testing main stack
+~~~~~~~~~~~~~~~~~~
+
+Pre-push data:
+textstop
+
+## push examples:
+romread1;>reg1pat1
+dumpreg1
+gotodata;>push
+# you can only push from register 1.
+romread2;>reg2pat1
+dumpreg2
+copy2to1
+gotodata;>push
+
+## some stack examination
+# not basic usage.
+textstart
+
+
+Stack pointer,
+contents of top and base of stack:
+textstop
+romread1;>stacktop
+dumpreg1
+setreg2;00000000+
+add
+setdata;>sptmp
+romread2;000000000;sptmp
+dumpreg2
+romread1;>stackbase
+setdata;>sptmp2
+romread2;000000000;sptmp2
+dumpreg2
+
+textstart
+
+
+Post-pop data:
+textstop
+
+## pop examples:
+# you can only pop to register 1
+gotodata;>pop
+copy1to2
+dumpreg2
+
+gotodata;>pop
+dumpreg1
+
+TTYwrite;:enter
+userwait
+
+
+# use the b stack in the same way, 
+# but prepend 'b' to the labels.
+
+textstart
+
+Testing b stack
+~~~~~~~~~~~~~~~
+
+Pre-push data:
+textstop
+romread1;>reg1pat2
+dumpreg1
+gotodata;>bpush
+romread2;>reg2pat2
+dumpreg2
+copy2to1
+gotodata;>bpush
+
+textstart
+
+
+B stack base and pointer,
+contents of top and second of b stack:
+textstop
+romread1;>bstackbase
+dumpreg1
+romread1;>bstacktop
+dumpreg1
+
+setreg2;00000000-
+add
+setdata;>bsptmp
+romread2;000000000;bsptmp
+dumpreg2
+
+romread1;>bstacktop
+setreg2;0000000-+
+add
+setdata;>bsptmp2
+romread2;000000000;bsptmp2
+dumpreg2
+
+#romread1;>bstackbase
+#setdata;>bsptmp2
+#romread2;000000000;bsptmp2
+#dumpreg2
+
+textstart
+
+
+Post-pop data:
+textstop
+gotodata;>bpop
+copy1to2
+dumpreg2
+gotodata;>bpop
+dumpreg1
+
+
+TTYwrite;:enter
+userwait
+
+## stack dump routines
+# can't use continue because they have loops.
+
+textstart
+
+Testing stack dump
+~~~~~~~~~~~~~
+
+Loading 4 values into main stack and dumping it:
+textstop
+romread1;>reg1pat1
+gotodata;>push
+romread1;>reg2pat1
+gotodata;>push
+romread1;>reg1pat2
+gotodata;>push
+romread1;>reg2pat2
+gotodata;>push
+
+romread1;>stacktop
+setreg2;00000000-;stackdumploop
+subtract
+setdata;>stackdump1
+romread2;000000000;stackdump1
+dumpreg2
+romread2;>stackbase
+gotodataif;>stackdumpdone
+gotodata;>stackdumploop
+null;;stackdumpdone
+
+textstart
+
+
+Loading 4 values into B stack and dumping it:
+textstop
+romread1;>reg1pat1
+gotodata;>bpush
+romread1;>reg2pat1
+gotodata;>bpush
+romread1;>reg1pat2
+gotodata;>bpush
+romread1;>reg2pat2
+gotodata;>bpush
+
+romread1;>bstacktop
+setreg2;00000000+;bstackdumploop
+subtract
+setdata;>bstackdump1
+romread2;000000000;bstackdump1
+dumpreg2
+romread2;>bstackbase
+gotodataif;>bstackdumpdone
+gotodata;>bstackdumploop
+null;;bstackdumpdone
+textstart
+
+
+The fifth value is the underflow flag pushed in initialization.
+textstop
+
+TTYwrite;:enter
+stop
+
+
+##########################
+### other example code
+
+## subroutine call
+
+# call:
+setreg1;>retpt
+gotodata;>push
+gotodata;>subr
+null;;retpt
+
+# note registers trashed by the push before the call.
+# they could be reloaded between the two gotodatas.
+
+null;;subr
+# ...
+# return:
+gotodata;>pop
+gotoreg1
+
+## to reset the stack, copy stackinit
+
+
+############################
+### main stack routines
+
+## push
+# pushes reg1 to the stack
+# trashes reg1, reg2
+
+setdata;>stackreg1bak;push
+
+romread1;>stacktop
+setdata;>stackpushme
+romread1;>stackreg1bak
+setdata;000000000;stackpushme
+
+romread1;>stacktop
+setreg2;00000000-
+add
+setdata;>stacktop
+
+continue
+
+## pop
+# pops top of stack into reg1
+# trashes reg2
+
+romread1;>stacktop;pop
+setreg2;00000000-
+subtract
+setdata;>stacktop
+setdata;>stackpopme
+romread1;000000000;stackpopme
+continue
+
+
+##########################
+### b stack routines
+# optional
+
+## push
+# pushes reg1 to b stack
+# trashes reg1, reg2
+
+setdata;>stackreg1bak;bpush
+romread1;>bstacktop
+setdata;>bstackpushme
+romread1;>stackreg1bak
+setdata;000000000;bstackpushme
+romread1;>bstacktop
+setreg2;00000000+
+add
+setdata;>bstacktop
+romread1;>stackreg1bak
+continue
+
+## pop
+# pops top of b stack into reg1
+# trashes reg2
+
+romread1;>bstacktop;bpop
+setreg2;00000000+
+subtract
+setdata;>bstacktop
+setdata;>bstackpopme
+romread1;000000000;bstackpopme
+continue
+
+
+stop

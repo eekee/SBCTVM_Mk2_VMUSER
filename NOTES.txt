@@ -3,6 +3,7 @@ instruction reference:
 ../textdocs/instructionlist.txt
 assembler source: ../SBTCVM-asm2.py
 grep -n __ ../textdocs/programming-the-VM/* ../textdocs/*
+
 would like to fix assembler, it doesn't check syntax.
 
 ../ROMS/
@@ -36,13 +37,10 @@ stack1.tasm does it like this:
 	setdata;>stackpushme
 	romread1;>stackreg1bak
 	setdata;000000000;stackpushme
-what's ptread? it's not in -asm.txt.
-	../ROMS/invertdemo1.tasm:/ptread
-	also ptwri 2 lines down, then ptget, ptinc, 
-	and above, ptset.
-	ptset is opcode -0-0+-, but this appears 
-	3 times, with different data.
-	it's not in ../textdocs/instructionlist.txt either.
+pt* are probably better.
+	see -asm.txt (which is now updated with them) and 
+	../ROMS/testmempt.tasm
+	
 
 ~ jumps, loops, conditionals
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -94,6 +92,7 @@ $ trit input
 $ stack
 	vital! there is no stack and only single-level return. (continue.tasm)
 	$ stack1.tasm -- base with tests -- seems done
+	>> stack1pt.tasm -- stack1 rewritten with pt* instructions.
 	> stack2.tasm -- interactive with tritin
 7-seg display
 	for easy score display in games
