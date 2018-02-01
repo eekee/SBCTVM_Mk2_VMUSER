@@ -1,7 +1,9 @@
 # stack routines with simple tests
 
-#>>>>>>>>>>>>>rewriting with pt*
 # to do:
+# dump routine should use pt*
+# inspection maybe should use pt*
+
 
 ### limits needs and details:
 
@@ -12,15 +14,19 @@
 
 # push and pop reg1 only. use regswap etc. for reg2.
 
+# interrupts should probably be disabled while using any of these routines.
+
 # the routines don't preserve registers because that takes
 # extra space and time and is sometimes unneccessary.
 # the push routines (main and b) save reg1 out of necessity,
-# so if you need to preserve it you can omit the save.
+# so if you need to preserve it you can omit the save, and 
 # restore it like this:
 #	romread1;>stackreg1bak
+# this version (with pt*) preserves reg2 in push and pop,
+# but trashes mempoint.
 
 # "stack" grows down. optional "bstack" grows up.
-# "push" is 10 instructions, "pop" 7.
+# "push" is 9 instructions, "pop" 7.
 
 # the size of this file (compared with sbctvm stock troms)
 # makes me wonder if there was a time when even the stack
@@ -282,32 +288,28 @@ gotoreg1
 
 ## push
 # pushes reg1 to the stack
-# trashes reg1, reg2
+# trashes reg1, mempoint
 
 setdata;>stackreg1bak;push
-
 romread1;>stacktop
-setdata;>stackpushme
+ptset
 romread1;>stackreg1bak
-setdata;000000000;stackpushme
-
-romread1;>stacktop
-setreg2;00000000-
-add
+ptwri
+ptdec
+ptget
 setdata;>stacktop
-
 continue
 
 ## pop
 # pops top of stack into reg1
-# trashes reg2
+# trashes mempoint
 
 romread1;>stacktop;pop
-setreg2;00000000-
-subtract
+ptset
+ptinc
+ptget
 setdata;>stacktop
-setdata;>stackpopme
-romread1;000000000;stackpopme
+ptread
 continue
 
 
@@ -317,30 +319,28 @@ continue
 
 ## push
 # pushes reg1 to b stack
-# trashes reg1, reg2
+# trashes reg1, mempoint
 
 setdata;>stackreg1bak;bpush
 romread1;>bstacktop
-setdata;>bstackpushme
+ptset
 romread1;>stackreg1bak
-setdata;000000000;bstackpushme
-romread1;>bstacktop
-setreg2;00000000+
-add
+ptwri
+ptinc
+ptget
 setdata;>bstacktop
-romread1;>stackreg1bak
 continue
 
 ## pop
 # pops top of b stack into reg1
-# trashes reg2
+# trashes mempoint
 
 romread1;>bstacktop;bpop
-setreg2;00000000+
-subtract
+ptset
+ptdec
+ptget
 setdata;>bstacktop
-setdata;>bstackpopme
-romread1;000000000;bstackpopme
+ptread
 continue
 
 

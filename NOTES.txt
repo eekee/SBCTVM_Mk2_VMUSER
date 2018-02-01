@@ -91,9 +91,12 @@ $ trit input
 	tritin.tasm
 $ stack
 	vital! there is no stack and only single-level return. (continue.tasm)
-	$ stack1.tasm -- base with tests -- seems done
-	>> stack1pt.tasm -- stack1 rewritten with pt* instructions.
+	$ stack1.tasm -- base with tests
+	$ stack1pt.tasm -- stack1 rewritten with pt* instructions.
 	> stack2.tasm -- interactive with tritin
+interrupt routines
+	* example structure for enabling/disabling interrupts
+	* routines to push everything on interrupt, and restore it at end.
 7-seg display
 	for easy score display in games
 string handling
