@@ -1,7 +1,6 @@
 # stack routines with simple tests
 
 # to do:
-# dump routine should use pt*
 # inspection maybe should use pt*
 
 
@@ -20,12 +19,11 @@
 # extra space and time and is sometimes unneccessary.
 # the push routines (main and b) save reg1 out of necessity,
 # so if you need to preserve it you can omit the save, and 
-# restore it like this:
-#	romread1;>stackreg1bak
+# restore it from stackreg1bak.
 # this version (with pt*) preserves reg2 in push and pop,
 # but trashes mempoint.
 
-# "stack" grows down. optional "bstack" grows up.
+# the main stack grows down. optional bstack grows up.
 # "push" is 9 instructions, "pop" 7.
 
 # the size of this file (compared with sbctvm stock troms)
@@ -216,15 +214,16 @@ romread1;>reg2pat2
 gotodata;>push
 
 romread1;>stacktop
-setreg2;00000000-;stackdumploop
-subtract
-setdata;>stackdump1
-romread2;000000000;stackdump1
-dumpreg2
+ptset
+ptinc;;stackdumploop
+ptread
+dumpreg1
+ptget
 romread2;>stackbase
 gotodataif;>stackdumpdone
 gotodata;>stackdumploop
 null;;stackdumpdone
+
 
 textstart
 
@@ -241,15 +240,16 @@ romread1;>reg2pat2
 gotodata;>bpush
 
 romread1;>bstacktop
-setreg2;00000000+;bstackdumploop
-subtract
-setdata;>bstackdump1
-romread2;000000000;bstackdump1
-dumpreg2
+ptset
+ptdec;;bstackdumploop
+ptread
+dumpreg1
+ptget
 romread2;>bstackbase
 gotodataif;>bstackdumpdone
 gotodata;>bstackdumploop
 null;;bstackdumpdone
+
 textstart
 
 
