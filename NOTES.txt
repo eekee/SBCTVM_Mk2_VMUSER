@@ -26,60 +26,6 @@ multi-trom: the .streg files in ../VMSYSTEM/ROMS/
 
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-@ HOWTO
-
-techniques, not hardware access.
-
-~ emulate indirect addressing
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-stack1.tasm does it like this:
-	romread1;>stacktop
-	setdata;>stackpushme
-	romread1;>stackreg1bak
-	setdata;000000000;stackpushme
-pt* are probably better.
-	see -asm.txt (which is now updated with them) and 
-	../ROMS/testmempt.tasm
-	
-
-~ jumps, loops, conditionals
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-so important i'm putting them here.
-cmd|data|label
-	define label. data required in this case.
-gotodata|>label
-	obvious
-gotoreg1
-	register index yay!
-	not used in any stock roms. works fine though.
-gotodataif|>label
-	jump if reg1 == reg2
-gotoifgreater|>label
-	jump if reg1 > reg2
-../ROMS/addloop.tasm
-stack1.tasm:/stackdump
-
-~ copy memory region
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-? :)
-
-
-~ trit manipulation
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-offsetlen
-	../ROMS/testoffsetlen.tasm
-	../textdocs/programming-the-VM/SBTCVM-asm.txt:/offsetlen
-	../textdocs/programming-the-VM/offsetlength.txt
-	doesn't say whether it affects the next op only, 
-	or all future ops until re-set.
-
-~ trit manipulation
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-clear all keyboard interrupts
-	one command: clearkeyint;????????+
-
-
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 @ PROGRAMS
 
 ideas and actual work, the latter marked with '$'.
@@ -153,6 +99,67 @@ forth
 text editor
 	with the forth
 binary computer emulator XD
+
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@ HOWTO
+
+techniques, not hardware access.
+
+~ emulate indirect addressing
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+stack1.tasm does it like this:
+	romread1;>stacktop
+	setdata;>stackpushme
+	romread1;>stackreg1bak
+	setdata;000000000;stackpushme
+pt* are probably better.
+	see -asm.txt (which is now updated with them) and 
+	../ROMS/testmempt.tasm
+	
+
+~ jumps, loops, conditionals
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+so important i'm putting them here.
+cmd|data|label
+	define label. data required in this case.
+gotodata|>label
+	obvious
+gotoreg1
+	register index yay!
+	not used in any stock roms. works fine though.
+gotodataif|>label
+	jump if reg1 == reg2
+gotoifgreater|>label
+	jump if reg1 > reg2
+../ROMS/addloop.tasm
+stack1.tasm:/stackdump
+
+~ copy memory region
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+? :)
+
+
+~ trit manipulation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+offsetlen
+	../ROMS/testoffsetlen.tasm
+	../textdocs/programming-the-VM/SBTCVM-asm.txt:/offsetlen
+	../textdocs/programming-the-VM/offsetlength.txt
+	doesn't say whether it affects the next op only, 
+	or all future ops until re-set.
+
+~ threading
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+this seemed like something i wasn't going to bother with, 
+until i realised it might be a way around the problems with 
+interrupts. maybe all the key input could be handled by 
+one thread, (the main thread is the only one which can,)
+while all the actual action happens in another thread.
+nnnope! you have to have a running mainloop -- no "wait" -- 
+for key interrupts to work properly, and that would halve the 
+speed of the other thread.
+
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 @ KEYBOARD
