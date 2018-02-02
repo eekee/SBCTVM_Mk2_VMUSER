@@ -43,6 +43,9 @@ $ stack
 interrupt routines
 	* example structure for enabling/disabling interrupts
 	* routines to push everything on interrupt, and restore it at end.
+	this might be less code if trom switching switches interrupts.
+inter-trom rpc and data passing
+	intertrom.txt
 7-seg display
 	for easy score display in games
 string handling
@@ -114,10 +117,21 @@ binary computer emulator XD
 
 not asking, keeping track of what i hope i can add some day.
 
+~ CISCing it up to save instructions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+* shifts, especially because divide rounds wrong for some uses.
+	defeating wrong rounding requires 3-4 instructions 
+	to truncate before division.
+* immediate arithmetic ops, adddata subdata muldata divdata, 
+	to save using reg2 and the instruction loading it.
+	very common case, would save a lot.
+	in this architecture, this covers increment and decrement too.
+
 ~ interruptable wait
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 probably the simplest key to sane interrupt handling.
 see 'threading' in the next section.
+or maybe rom switching could make it easier without this.
 
 ~ save trom
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -125,6 +139,13 @@ probably the simplest way to get permanent storage.
 it'll overwrite, preserving data is the user's responsibility.
 i use git, or files can be copied of course, and in case of 
 disaster the original trom can be restored by assembling again.
+maybe a menu entry, "save trom (overwrite)".
+what does it do with multiple troms though?
+
+then i thought of using multiple troms like disks. 
+i'd want to save a particular trom or troms without 
+error-prone menu picking every time.
+so i'd want to save by program command, not menu.
 
 ~ disassembler
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -222,9 +243,11 @@ speed of the other thread.
 
 ~ scratch memory
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-how much is there?
-i guess it's used by "IOwrite;>mem1" etc.
+how much is there? 729 words.
+it's at the lowest addresses on the iobus, from --------- to ---++++++.
+	these locations are aliased by labels "mem1" to "mem729".
 can it be used for communication between multiple loaded troms?
+	interesting question!
 
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
