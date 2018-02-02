@@ -1,0 +1,92 @@
+# palette -- draw a palette in the 3tpp rgb framebuffer
+
+gotodata;>start
+
+# 114x81
+null;0000+++-0;fbx
+null;0000+0000;fby
+
+null;;pixx
+null;;pixy
+null;;pixval
+null;;pixtmp
+
+
+### trit drawing
+
+# lowest trit of address to routine:
+#	+	drawpixleft
+#	0	drawpixmid
+#	-	drawpixright
+
+# yay! computed goto!
+null;>drawpixright
+null;>drawpixmid;drawpixtable
+null;>drawpixleft
+
+romread1;>pixval;drawpixleft
+setreg2;00+000000
+multiply
+offsetlen;off,6,3
+continue
+
+romread1;>pixval;drawpixmid
+setreg2;00000+000
+multiply
+offsetlen;off,3,3
+continue
+
+romread1;>pixval;drawpixright
+offsetlen;off,0,3
+continue
+
+# could compute offset instead, 
+# but i suspect it would be more instructions.
+
+
+###
+
+null;;start
+
+
+### draw pixel
+# compute x,y to linear pixel number in pixtmp
+romread1;>pixy
+romread2;>fbx
+multiply
+romread2;>pixx
+add
+setdata;>pixtmp
+# convert linear pixel number to address:
+setreg2;0000000+0
+divide
+setreg2;>dispbase
+add
+ptset
+# the last trit of the lpn to the correct routine to
+# offset within the address, and draw:
+offsetlen;off,0,1
+romread1;>pixtmp
+offsetlen;off,0,9
+setrom2;>drawpixtable
+add
+(got addr to read routine addr from now)
+
+gotoreg1
+ptwri
+offsetlen;off,0,9
+
+#>>>>>>>>>>
+# try computing offset instead of goto
+
+# get the last trit of the lpn...
+# translate it to offset:
+# '-' to 0 to '--'
+# '0' to 3 to '0-'
+# '+' to 6 to '+-'
+# oh right! multiply by +0 and add -; simple!
+# or multiply by +000 and add -00 to save a multiply.
+# add -+- to get C in too.
+# wait! wouldn't lpn start at 0?
+# *no*, let's define it to start at 0- just to prevent this! lol
+# actually i need to work this out properly. *flop*
