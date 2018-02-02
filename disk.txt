@@ -1,0 +1,54 @@
+@@@@@@@@@@@@@@@@@@@@@@@@@
+@ DISK TROMS
+
+a little bit of code at the beginning to do rpc 
+as per intertrom.txt , and a lot of space for storing data.
+
+~ blockwise or file system?
+~~~~~~~~~~~~~~~~~~~~~~
+i thought i'd want it blockwise like forths do.
+then i momentarily thought named files wouldn't be complex, 
+but let's see...
+
+blockwise probably doesn't even need open or close, 
+just read and write with offsets. with these small 'disks', 
+it's not even really blocks unless the caller imposes 
+that structure.
+
+filenames need name search code, directory format choices, 
+a delete command, a block scheme unless i want to copy all 
+of an older file to the end on append, and a space compaction 
+command. anything else? not format, that needs to be done 
+external to the disk, unless you just truncate the root directory.
+
+so seriously, just stick with blockwise! :)
+
+~ tight storage
+~~~~~~~~~~~~~~~~~~~~~~
+maybe it's reasonable to pack data into the command words 
+and 3 characters to every 2 data words. errr.... no.
+better idea: separate text and data pages, 
+just like colorforth! :) the text pages would be stored in 
+command words because it's a 6-trit encoding.
+with simple linear/blockwise access, 
+it's not even really 2 file types, just 2 address spaces.
+
+i've got a feeling i'll want more text than data. if so, 
+a routine to pack 3 6-trit chars into 2 9-trit data cells would do the trick.
+
+~ debug help
+~~~~~~~~~~~~~~~~~~~~~~
+for some future disassembler, 
+perhaps the second data word should be a flag number 
+and the third the address of the start of data.
+
+~ bootability
+~~~~~~~~~~~~~~~~~~~~~~
+if bootable 'disks' are possible, 
+then with the exception of creating blank discs, 
+it'll be possible to do make new troms within sbtcvm itself.
+all it needs is a single data cell which, if non-0, 
+is an address to jump to when the disk has done its own setup.
+to write machine code to it would not be complicated. 
+for any given address, writing to the 'text' space 
+writes the command, and to the data space the data.

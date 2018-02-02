@@ -1,6 +1,9 @@
 inter-trom communication using the scratch memory.
 this all supposes that is possible.
 
+this is getting ahead of myself.
+i should implement string routines first.
+
 basic layout:
 	1	command
 	1	identifier (fid, channel id, etc.)
@@ -23,10 +26,15 @@ or, - for the command (it's a demand), + for success, or 0 for error.
 read
 write
 open
-	to set up a quick id for 
-	read and write
+	to set up an id for read and write.
+	cid = channel identifier.
 close
-	to free an id.
+	to free a cid.
+indentify
+	identify the trom.
+	perhaps every rpc-enabled trom should implement this.
+	it should return some of its capabilities, 
+	like whether it can provide stdio or store data.
 
 some of these will vary more than others.
 read and write should be fairly consistent, 
@@ -54,41 +62,4 @@ read and write commands with identifiers...
 @@@@@@@@@@@@@@@@@@@@@@@@@
 @ DISK TROMS
 
-a little bit of code at the beginning to do the rpc, 
-and a lot of space for storing data.
-
-~ blockwise or file system?
-~~~~~~~~~~~~~~~~~~~~~~
-i thought i'd want it blockwise like forths do.
-then i momentarily thought named files wouldn't be complex, 
-but let's see...
-
-blockwise probably doesn't even need open or close, 
-just read and write with offsets. with these small 'disks', 
-it's not even really blocks unless the caller imposes 
-that structure.
-
-filenames need name search code, directory format choices, 
-a delete command, a block scheme unless i want to copy all 
-of an older file to the end on append, and a space compaction 
-command. anything else? not format, that needs to be done 
-external to the disk, unless you just truncate the root directory.
-
-so seriously, just stick with blockwise! :)
-
-~ tight storage
-~~~~~~~~~~~~~~~~~~~~~~
-maybe it's reasonable to pack data into the command words 
-and 3 characters to every 2 data words. errr.... no.
-better idea: separate text and data pages, 
-just like colorforth! :) the text pages would be stored in 
-command words because it's a 6-trit encoding.
-
-with simple linear/blockwise access, 
-it's not even really 2 file types.
-
-~ debug help
-~~~~~~~~~~~~~~~~~~~~~~
-for some future disassembler, 
-perhaps the second data word should be a flag number 
-and the third the address of the start of data.
+see disk.txt

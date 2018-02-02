@@ -43,7 +43,7 @@ $ stack
 interrupt routines
 	* example structure for enabling/disabling interrupts
 	* routines to push everything on interrupt, and restore it at end.
-	this might be less code if trom switching switches interrupts.
+	this might be less code if switching troms switches interrupts.
 inter-trom rpc and data passing
 	intertrom.txt
 7-seg display
