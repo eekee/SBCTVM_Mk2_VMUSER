@@ -59,7 +59,12 @@ linked list traverser
 $ character set display
 	chars.tasm
 	> working on paged number:character display.
+palette in the color framebuffer
+	lots of offsetlen work i'm sure, good practice for 
+	font drawing and other graphic region copying.
 calculator, tty display
+	calculation operations could easily be added to stack2
+	for a rpn calculator.
 calculator, graphical display
 clock, digital
 	7-seg in the mini color display
@@ -174,8 +179,32 @@ offsetlen
 	../ROMS/testoffsetlen.tasm
 	../textdocs/programming-the-VM/SBTCVM-asm.txt:/offsetlen
 	../textdocs/programming-the-VM/offsetlength.txt
-	doesn't say whether it affects the next op only, 
-	or all future ops until re-set.
+	looks like it affects all future ops until re-set.
+	which ops exactly? "load and set." which are those? :)
+	certainly memory read and write. anything else?
+offsetlen|A,B,C
+	A: if on, existing destination data is ignored, 
+		ground is written for trits not covered by the source.
+		otherwise the destination trits are preserved.
+	B: offset from the radix point
+		so shift left? no, left edge to truncate.
+	C: truncation
+truncation may be greater than the number of chars without affecting it.
+offsetlen.tasm
+new description:
+[offsetlen defines a masking window, only trits visible 
+through the window are written to the destination.
+
+usage:
+	offsetlen|A,B,C
+if A is "off", the remaining trits in the destination are preserved.
+if it is "on", they are overwritten with 0.
+B is the offset for the window's low-value edge (the right side).
+C is the size of the window, the length extending toward high values.
+affected operations are read and write to IO and memory.
+the window remains active until reset with "offsetlen|off,0,9".
+see also: romread* setdata IOread* IOwrite*
+]
 
 ~ threading
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
