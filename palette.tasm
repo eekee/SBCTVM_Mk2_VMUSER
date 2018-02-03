@@ -1,7 +1,18 @@
 # palette -- draw a palette in the 3tpp rgb framebuffer
 
-# possible bug: might have pixels within a word in the wrong order.
-# to fix, invert that last trit.
+
+# bugs:
+#	i'm seeing yellow & 2 grey on row 0, 2 grey on row 1, 1 grey on row 2
+#		offset and something else?
+#		inverting that last trit... no difference!
+#		moving chosen pixel positions...
+#		same pattern except bottom pixel is 3 lines up and about 3px left.
+#		with a color bg, the odd yellow pixel isn't yellow any more.
+#			on a black bg, it's blue!
+#	i think the pixels within a word are in the wrong order.
+# 		to fix, invert that last trit.
+#	pixval multiplied is just 000000000
+
 
 gotodata;>start
 
@@ -47,6 +58,15 @@ setreg2;00000000+
 subtract
 setdata;>pixtmp
 
+TTYwrite;:enter
+dumpreg1
+TTYwrite;: 
+TTYwrite;:L
+TTYwrite;:P
+TTYwrite;:N
+TTYwrite;:-
+TTYwrite;:1
+
 ## convert to word address and store in mempoint.
 # 3 extra lines because divide rounds wrong for this purpose.
 offsetlen;on,1,8
@@ -54,9 +74,16 @@ romread1;>pixtmp
 offsetlen;off,0,9
 setreg2;0000000+0
 divide
-setreg2;>fb0
+romread2;>fb0
 add
 ptset
+
+dumpreg1
+TTYwrite;: 
+TTYwrite;:a
+TTYwrite;:d
+TTYwrite;:d
+TTYwrite;:r
 
 # get the last trit of the lpn and translate it to offset:
 # '-' to 0 to '--'
@@ -70,12 +97,23 @@ ptset
 offsetlen;on,0,1
 romread1;>pixtmp
 offsetlen;off,0,9
+invert
+# invert because display is big-endian
 setdata;>pixtmp
 setreg2;00000+000
 multiply
 setreg2;000000-+-
 add
 setdata;>pixoff
+
+dumpreg1
+TTYwrite;: 
+TTYwrite;:p
+TTYwrite;:i
+TTYwrite;:x
+TTYwrite;:o
+TTYwrite;:f
+TTYwrite;:f
 
 # left shift computation for the pixel data:
 #	trt	multiplier
@@ -88,10 +126,30 @@ setdata;>pixoff
 romread1;>pixtmp
 romread2;>pixtbl
 add
-setdata;>getmul
-romread1;000000000;getmul
+setdata;>pixgetmul
+romread1;000000000;pixgetmul
 romread2;>pixval
 multiply
+
+dumpreg1
+TTYwrite;: 
+TTYwrite;:p
+TTYwrite;:i
+TTYwrite;:x
+TTYwrite;:v
+TTYwrite;:a
+TTYwrite;:l
+TTYwrite;: 
+TTYwrite;:m
+TTYwrite;:u
+TTYwrite;:l
+TTYwrite;:t
+TTYwrite;:i
+TTYwrite;:p
+TTYwrite;:l
+TTYwrite;:i
+TTYwrite;:e
+TTYwrite;:d
 
 # finally write pixel
 offsetlen;000000000;pixoff
@@ -118,6 +176,12 @@ romread1;>fbtop
 subtract
 setdata;>fb0
 
+dumpreg1
+TTYwrite;: 
+TTYwrite;:f
+TTYwrite;:b
+TTYwrite;:0
+
 setreg1;---------
 IOwrite1;>dispmode
 romread1;>fb0
@@ -127,10 +191,13 @@ IOwrite1;>dispoffset
 # ehh, i like the grey of 000000000, but i need to see if the region matches.
 # takes 2 or 3 seconds to fill.
 
+gotodata;>fbstriped
+
 # fb0 still in reg1
 ptset
 romread2;>fbtop
-setreg1;---------;fbfillloop
+#setreg1;---------;fbfillloop
+setreg1;+++++++++;fbfillloop
 ptwri
 ptinc
 # 	test
@@ -143,40 +210,62 @@ ptget
 gotodataif;>fbfillloopend
 gotodata;>fbfillloop
 
+ptset;;fbstriped
+romread2;>fbtop
+#setreg1;-00+00-00;fbfillloopc
+setreg1;---+++---;fbfillloopc
+ptwri
+ptinc
+invert1
+setdata;>fbfillloopc
+ptget
+gotodataif;>fbfillloopend
+gotodata;>fbfillloopc
+
+
 setreg1;000000000;fbfillloopend
 IOwrite1;>dispupdate
 
 
-### simple first-test code
-#write white pixel at 0,0, yellow at 1,1, red at 2,2.
+### very simple test
 
 # test with grey pixel
-setreg1;>fb0
+romread1;>fb0
+# ↑ was setreg, oops
+setreg2;00000+000
+add
+# works without the add, in the top left as proper,
+# but i want to use that corner for another test below.
 ptset
-ptinc
-setreg1;000000000
+setreg1;+0-0+--0+
+#   pleasant colors!
 ptwri
-# does not appear!
-IOwrite1;>dispupdate
-# not even with that.
-
-setreg1;000000+++
-setdata;>pixval
 setreg1;000000000
+IOwrite1;>dispupdate
+# yes, high trit is left.
+
+
+
+### simple first-test code
+#write green pixel at 8,8, yellow at 9,9, red at 10,10.
+
+setreg1;000000-+-
+setdata;>pixval
+setreg1;000000+0-
 setdata;>pixx
 setdata;>pixy
 gotodata;>pixdraw
 
 setreg1;000000++-
 setdata;>pixval
-setreg1;00000000+
+setreg1;000000+00
 setdata;>pixx
 setdata;>pixy
 gotodata;>pixdraw
 
 setreg1;000000+--
 setdata;>pixval
-setreg1;0000000+-
+setreg1;000000+0+
 setdata;>pixx
 setdata;>pixy
 gotodata;>pixdraw

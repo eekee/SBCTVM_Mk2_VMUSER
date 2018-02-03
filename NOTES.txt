@@ -77,9 +77,9 @@ $ character set display
 $ palette in the color framebuffer
 	lots of offsetlen work i'm sure, good practice for 
 	font drawing and other graphic region copying.
-	> palette.tasm
-		uses computed goto to select correct offset.
-		make another one compute offset later.
+	$ palette.tasm -- getting there, but still major bugs
+	now i see how slow filling the screen is, 
+	i'm feeling less enthusiastic about mk2 graphics in general.
 calculator, tty display
 	calculation operations could easily be added to stack2
 	for a rpn calculator.
