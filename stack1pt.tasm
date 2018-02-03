@@ -103,15 +103,14 @@ contents of top and base of stack:
 textstop
 romread1;>stacktop
 dumpreg1
-setreg2;00000000+
-add
-setdata;>sptmp
-romread2;000000000;sptmp
-dumpreg2
+ptset
+ptinc
+ptread
+dumpreg1
 romread1;>stackbase
-setdata;>sptmp2
-romread2;000000000;sptmp2
-dumpreg2
+ptset
+ptread
+dumpreg1
 
 textstart
 
@@ -161,23 +160,14 @@ dumpreg1
 romread1;>bstacktop
 dumpreg1
 
-setreg2;00000000-
-add
-setdata;>bsptmp
-romread2;000000000;bsptmp
-dumpreg2
+ptset
+ptdec
+ptread
+dumpreg1
 
-romread1;>bstacktop
-setreg2;0000000-+
-add
-setdata;>bsptmp2
-romread2;000000000;bsptmp2
-dumpreg2
-
-#romread1;>bstackbase
-#setdata;>bsptmp2
-#romread2;000000000;bsptmp2
-#dumpreg2
+ptdec
+ptread
+dumpreg1
 
 textstart
 

@@ -39,14 +39,12 @@ $ stack
 	vital! there is no stack and only single-level return. (continue.tasm)
 	$ stack1.tasm -- base with tests
 	$ stack1pt.tasm -- stack1 rewritten with pt* instructions.
-	>	a little bit left to do.
-	> benchmark the two lots of stack code.
 	stack2.tasm -- interactive with tritin
 	>	exists, but much to do
 interrupt routines
 	* example structure for enabling/disabling interrupts
 	* routines to push everything on interrupt, and restore it at end.
-	this might be less code if switching troms switches interrupts.
+	>>>first see if switching troms switches interrupts.
 inter-trom rpc and data passing
 	intertrom.txt
 7-seg display
@@ -74,7 +72,7 @@ linked list traverser
 $ character set display
 	chars.tasm
 	> working on paged number:character display.
-$ palette in the color framebuffer
+palette in the color framebuffer
 	lots of offsetlen work i'm sure, good practice for 
 	font drawing and other graphic region copying.
 	$ palette.tasm -- getting there, but still major bugs
@@ -88,6 +86,11 @@ clock, digital
 	7-seg in the mini color display
 clock, analogue
 	easy enough with the vector graphics in the mini displays
+
+~ benchmark
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+the two lots of stack code; with vs without pt*
+	maybe include the extra register saving.
 
 ~ games
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
