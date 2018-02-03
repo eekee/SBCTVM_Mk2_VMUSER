@@ -1,26 +1,44 @@
 # palette -- draw a palette in the 3tpp rgb framebuffer
 
+# possible bug: might have pixels within a word in the wrong order.
+# to fix, invert that last trit.
+
 gotodata;>start
+
+
+### constants
 
 # 114x81
 null;0000+++-0;fbx
 null;0000+0000;fby
+null;+++++++++;fbtop
+
+# pixel offset lookup table
+null;00000000+
+null;00000+000;pixtbl
+null;00+000000
+
+### api registers
 
 null;;pixx
 null;;pixy
 null;;pixval
+
+### internal registers
+
+null;;fb0
 null;;pixtmp
 
 
-null;;start
-
+########################
+# routines
 
 ### draw pixel
 
 ## compute x,y to linear pixel number - 1, and store in in pixtmp.
 # 1 is subtracted because word address must be 0-based
 # but last trit must be neg-based to fit 3 positions in 1 trit.
-romread1;>pixy
+romread1;>pixy;pixdraw
 romread2;>fbx
 multiply
 romread2;>pixx
@@ -36,7 +54,7 @@ romread1;>pixtmp
 offsetlen;off,0,9
 setreg2;0000000+0
 divide
-setreg2;>dispbase
+setreg2;>fb0
 add
 ptset
 
@@ -48,17 +66,126 @@ ptset
 # or multiply by +000 and add -00 to save a multiply.
 # add -+- to set C to 3 at the same time.
 
-# offsetlen computation...
-# pixtmp contains lpn-1
+# here, pixtmp contains lpn-1
 offsetlen;on,0,1
 romread1;>pixtmp
 offsetlen;off,0,9
+setdata;>pixtmp
 setreg2;00000+000
 multiply
 setreg2;000000-+-
 add
 setdata;>pixoff
-...
+
+# left shift computation for the pixel data:
+#	trt	multiplier
+#	-	00000000+
+#	0	00000+000
+#	+	00+000000
+# lookup table
+
+# pixtmp now contains just the last trit
+romread1;>pixtmp
+romread2;>pixtbl
+add
+setdata;>getmul
+romread1;000000000;getmul
+romread2;>pixval
+multiply
+
+# finally write pixel
 offsetlen;000000000;pixoff
-...
+ptwri
 offsetlen;off,0,9
+
+# didn't use goto in all that!
+continue
+
+
+###########################
+# main
+
+null;;start
+
+
+### init display
+
+romread1;>fbx
+romread2;>fby
+multiply
+copy1to2
+romread1;>fbtop
+subtract
+setdata;>fb0
+
+setreg1;---------
+IOwrite1;>dispmode
+romread1;>fb0
+IOwrite1;>dispoffset
+
+## fill with black
+# ehh, i like the grey of 000000000, but i need to see if the region matches.
+# takes 2 or 3 seconds to fill.
+
+# fb0 still in reg1
+ptset
+romread2;>fbtop
+setreg1;---------;fbfillloop
+ptwri
+ptinc
+# 	test
+#setreg2;00000000+
+#add
+#setdata;>fbfillloop
+#romread2;>fbtop
+# 	end -- this bit works!
+ptget
+gotodataif;>fbfillloopend
+gotodata;>fbfillloop
+
+setreg1;000000000;fbfillloopend
+IOwrite1;>dispupdate
+
+
+### simple first-test code
+#write white pixel at 0,0, yellow at 1,1, red at 2,2.
+
+# test with grey pixel
+setreg1;>fb0
+ptset
+ptinc
+setreg1;000000000
+ptwri
+# does not appear!
+IOwrite1;>dispupdate
+# not even with that.
+
+setreg1;000000+++
+setdata;>pixval
+setreg1;000000000
+setdata;>pixx
+setdata;>pixy
+gotodata;>pixdraw
+
+setreg1;000000++-
+setdata;>pixval
+setreg1;00000000+
+setdata;>pixx
+setdata;>pixy
+gotodata;>pixdraw
+
+setreg1;000000+--
+setdata;>pixval
+setreg1;0000000+-
+setdata;>pixx
+setdata;>pixy
+gotodata;>pixdraw
+
+
+### update display
+
+setreg1;000000000
+IOwrite1;>dispupdate
+
+
+stop

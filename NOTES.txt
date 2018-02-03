@@ -39,7 +39,10 @@ $ stack
 	vital! there is no stack and only single-level return. (continue.tasm)
 	$ stack1.tasm -- base with tests
 	$ stack1pt.tasm -- stack1 rewritten with pt* instructions.
-	> stack2.tasm -- interactive with tritin
+	>	a little bit left to do.
+	> benchmark the two lots of stack code.
+	stack2.tasm -- interactive with tritin
+	>	exists, but much to do
 interrupt routines
 	* example structure for enabling/disabling interrupts
 	* routines to push everything on interrupt, and restore it at end.
@@ -53,6 +56,15 @@ string handling
 	output to tty
 	integer<->balanced ternary string conversion
 	integer<->decimal string conversion
+	store text in command words
+		same size, 6 trits.
+		there's 3078 unused command words 
+		alongside a 3-trit rgb framebuffer, 
+		enough for some notes!
+		the down side is organizing it.
+	pack 5 chars into 2 locations:
+		3 in the 2 data words, 
+		2 in the command words.
 directional movement key routines
 draw string in graphics mode(s)
 linked list traverser
@@ -297,6 +309,13 @@ it might be reasonable if one 'rom' is a display server.
 it would allow 57x34 or 57x30 chars, depending on 6x7 or 6x8 char cell.
 non-square pixels might be more reasonable, but all this is still underwhelming.
 another trick: 2 trits encoding 3 pixels. i'm sure i'd hate it. :)
+
+114 is not a great width for 1tpp, it's not a multiple of 9.
+243 is, and it's only just over double.
+the corresponding vertical resolution would be 173 (or maybe 172).
+such a mode would take 4671 words, or 23% of a rom. large, but not impossible.
+with 2:3 pixels, it would have 115 lines and take 3105 words, 16%. 
+same as 3-trit color!
 
 ~ roms
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
