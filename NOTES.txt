@@ -23,7 +23,7 @@ what's this?
 ../textdocs/IObanklist-summary.txt
 
 multi-trom: the .streg files in ../VMSYSTEM/ROMS/
-
+need to better test communicating via scratch memory.
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 @ PROGRAMS
@@ -44,7 +44,7 @@ $ stack
 interrupt routines
 	* example structure for enabling/disabling interrupts
 	* routines to push everything on interrupt, and restore it at end.
-	>>>first see if switching troms switches interrupts.
+	>>>first see about making scratch memory global.
 inter-trom rpc and data passing
 	intertrom.txt
 7-seg display

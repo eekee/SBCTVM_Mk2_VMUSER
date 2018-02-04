@@ -1,0 +1,7 @@
+# tests for trom switching behaviour: what's cleared and what's not.
+# see top of tromswitch1.tasm for more.
+
+streg_subtitle="TROM Switch Test"
+
+TROMA="tromswitch1.trom"
+TROMB="tromswitch2.trom"

@@ -1,0 +1,46 @@
+# half of trom switching tests.
+# see top of tromswitch1.tasm for more.
+
+# other files:
+#	tromswitch1.tasm
+#	tromswitch.streg
+
+setdata;>reg1bak
+copy2to1
+setdata;>reg2bak
+romread1;>initflag
+setreg2;+++++++++
+gotodataif;>backhere
+copy2to1
+setdata;>initflag
+
+null;000000000;initflag
+null;000000000;reg1bak
+null;000000000;reg2bak
+
+textstart
+Starting TROM B
+textstop
+
+setkeyint;:x
+keyint;>switchtrom
+gotodata;>backhere
+
+null;;mainloop
+gotodata;>mainloop
+
+null;;switchtrom
+gotoA
+
+null;;backhere
+romread1;>reg1bak
+romread2;>reg2bak
+textstart
+Switched to TROM B
+reg1, reg2, scratch memory location 1:
+textstop
+dumpreg1
+dumpreg2
+IOread;>mem1
+dumpreg1
+gotodata;>mainloop

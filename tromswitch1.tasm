@@ -1,0 +1,123 @@
+# tromswitch1 -- half of testing multi-trom capabilities.
+# this half based on:
+# tritin -- by-trit number input routines
+
+# press 'x' to switch troms
+
+### tests:
+# communication by scratch page
+# communication by register contents
+# whether interrupts are all switched
+
+# in tests, this is the 'sender',
+# setting data to be printed by the receiver.
+
+# other files:
+#	tromswitch2.tasm
+#	tromswitch.streg
+
+
+##############################
+# barely modified tritin follows
+
+### limits needs and details:
+
+# namespace:
+#	tritin_* key_*
+
+# the interrupts save registers, but cannot use "continue".
+# i don't know what a sophisticated mainloop would look like.
+# maybe interrupts only happen on gotos? i hope so.
+
+# apart from "key_enter", the interrupt routines write
+# the character to the tty last, so the user can see any
+# delay in execution. however, no delay is visible with
+# my core i5 host, and even trying to press two keys
+# at once does not result in miscalculation. perhaps
+# sbtcvm only checks for interrupts during goto.
+
+
+gotodata;>tritin_init
+
+null;000000000;tritin_number
+null;;tritin_reg1bak
+null;;tritin_reg2bak
+
+setkeyint;:+;tritin_init
+keyint;>key_plus
+setkeyint;:0
+keyint;>key_zero
+setkeyint;:-
+keyint;>key_minus
+setkeyint;:enter
+keyint;>key_enter
+
+# tromswitch
+setkeyint;:x
+keyint;>switchtrom
+
+null;;mainloop
+gotodata;>mainloop
+
+setdata;>tritin_reg1bak;key_enter
+copy2to1
+setdata;>tritin_reg2bak
+romread1;>tritin_number
+dumpreg1
+TTYwrite;:enter
+setreg1;000000000
+setdata;>tritin_number
+romread1;>tritin_reg1bak
+romread2;>tritin_reg2bak
+gotodata;>mainloop
+
+setdata;>tritin_reg1bak;key_plus
+copy2to1
+setdata;>tritin_reg2bak
+romread1;>tritin_number
+setreg2;0000000+0
+multiply
+setreg2;00000000+
+add
+setdata;>tritin_number
+romread1;>tritin_reg1bak
+romread2;>tritin_reg2bak
+TTYwrite;:+
+gotodata;>mainloop
+
+setdata;>tritin_reg1bak;key_minus
+copy2to1
+setdata;>tritin_reg2bak
+romread1;>tritin_number
+setreg2;0000000+0
+multiply
+setreg2;00000000-
+add
+setdata;>tritin_number
+romread1;>tritin_reg1bak
+romread2;>tritin_reg2bak
+TTYwrite;:-
+gotodata;>mainloop
+
+setdata;>tritin_reg1bak;key_zero
+copy2to1
+setdata;>tritin_reg2bak
+romread1;>tritin_number
+setreg2;0000000+0
+multiply
+setdata;>tritin_number
+romread1;>tritin_reg1bak
+romread2;>tritin_reg2bak
+TTYwrite;:0
+gotodata;>mainloop
+
+
+# tromswitch
+null;;switchtrom
+IOwrite;>mem1
+gotoB;---------
+IOread;>mem1
+textstart
+Returned to Tritin
+textstop
+gotodata;>mainloop
