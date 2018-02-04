@@ -1,0 +1,334 @@
+# words -- partial input code for a forth
+# includes stack1pt
+
+
+### stack info:
+
+# namespace:
+#	stack* push pop
+#	bstack* bpush bpop
+
+# push and pop reg1 only. use regswap etc. for reg2.
+
+# interrupts should probably be disabled while using any of these routines.
+### risking it this time!
+
+# the push routines (main and b) save reg1 out of necessity,
+# so if you need to preserve it you can omit the save, and 
+# restore it from stackreg1bak.
+# this version (with pt*) preserves reg2 in push and pop,
+# but trashes mempoint.
+
+
+
+gotodata;>start
+
+# test data
+null;+0+0+0+0+;reg1pat1
+null;0+0+0+0+0;reg2pat1
+null;-0-0-0-0-;reg1pat2
+null;0-0-0-0-0;reg2pat2
+
+# stack pointer etc
+null;+++++++++;stackbase
+null;;stacktop
+null;;stackreg1bak
+null;+++------;bstackbase
+null;;bstacktop
+
+# some bstackbase values with space for
+# the 2 stacks and remaining memory:
+# +++------	728  		18955
+# ++-------	2186		17497
+# +--------	6560		13123
+
+
+############################
+### initialization
+
+null;;start
+
+romread1;>stackbase;stackinit
+setdata;>stacktop
+# if not using bstack omit remainder
+romread1;>bstackbase
+setdata;>bstacktop
+# underflow marker for bstack, may help in debugging;
+# 2 lines doubly optional:
+setreg1;-+-+-+-+-
+gotodata;>bpush
+
+#	<sed 's/(.+)(.)/setkeyint;:\2\nkeyint;>key_\2/; /z/q' ../textdocs/SBTCVM-6-trit-Text-encoding.txt
+#[
+setkeyint;:a
+keyint;>key_a
+setkeyint;:b
+keyint;>key_b
+setkeyint;:c
+keyint;>key_c
+setkeyint;:d
+keyint;>key_d
+setkeyint;:e
+keyint;>key_e
+setkeyint;:f
+keyint;>key_f
+setkeyint;:g
+keyint;>key_g
+setkeyint;:h
+keyint;>key_h
+setkeyint;:i
+keyint;>key_i
+setkeyint;:j
+keyint;>key_j
+setkeyint;:k
+keyint;>key_k
+setkeyint;:l
+keyint;>key_l
+setkeyint;:m
+keyint;>key_m
+setkeyint;:n
+keyint;>key_n
+setkeyint;:o
+keyint;>key_o
+setkeyint;:p
+keyint;>key_p
+setkeyint;:q
+keyint;>key_q
+setkeyint;:r
+keyint;>key_r
+setkeyint;:s
+keyint;>key_s
+setkeyint;:t
+keyint;>key_t
+setkeyint;:u
+keyint;>key_u
+setkeyint;:v
+keyint;>key_v
+setkeyint;:w
+keyint;>key_w
+setkeyint;:x
+keyint;>key_x
+setkeyint;:y
+keyint;>key_y
+setkeyint;:z
+keyint;>key_z
+#]
+
+setkeyint;:space
+keyint;>proc_word
+
+setkeyint;:enter
+keyint;>clear
+
+#######################
+### words main code
+
+# read a word and compress.
+# on space, dump the length and compressed form.
+# maybe make enter delete, even del word.
+# 	or - delete, + switch mode. no, no modes.
+# maybe later read words to enter, then dump one at a time.
+
+# data:
+# input mode:
+# 	chars get pushed to the stack.
+# 	mempoint holds the count of chars.
+# processing:
+# 	space beyond the end of the program is used to compose the word
+#		see "allocbase" below.
+
+# no point jumping over these
+null;;charcount
+
+TTYlinedraw;:on
+textstart
+...
+textstop
+TTYlinedraw;:off
+
+# clear0 - [re]init for next word - used by clear and proc_word
+setreg1;000000000;clear0
+setdata;>charcount
+
+null;;spinloop
+gotodata;>spinloop
+
+
+# proc_word - dump length and compressed form
+TTYwrite;:enter;proc_word
+...
+gotodata;>clear0
+
+
+# clear - replacement for delete word
+TTYwrite;:-;clear
+TTYwrite;:-
+TTYwrite;:c
+TTYwrite;:l
+TTYwrite;:e
+TTYwrite;:a
+TTYwrite;:r
+TTYwrite;:e
+TTYwrite;:d
+TTYwrite;:-
+TTYwrite;:-
+TTYwrite;:enter
+gotodata;>clear0
+
+
+# inkey - a word-char key was pressed
+gotodata;>push
+romread1;>charcount
+setreg2;00000000+
+add
+setdata;>charcount
+gotodata;>spinloop
+
+
+############################
+### interrupt routines
+
+#	<sed 's/(.+)(.)/TTYwrite;:\2;key_\2\nsetreg1;\1\ngotodata;>inkey/; /z/q' ../textdocs/SBTCVM-6-trit-Text-encoding.txt
+#[
+TTYwrite;:a;key_a
+setreg1;------
+gotodata;>inkey
+TTYwrite;:b;key_b
+setreg1;-----0
+gotodata;>inkey
+TTYwrite;:c;key_c
+setreg1;-----+
+gotodata;>inkey
+TTYwrite;:d;key_d
+setreg1;----0-
+gotodata;>inkey
+TTYwrite;:e;key_e
+setreg1;----00
+gotodata;>inkey
+TTYwrite;:f;key_f
+setreg1;----0+
+gotodata;>inkey
+TTYwrite;:g;key_g
+setreg1;----+-
+gotodata;>inkey
+TTYwrite;:h;key_h
+setreg1;----+0
+gotodata;>inkey
+TTYwrite;:i;key_i
+setreg1;----++
+gotodata;>inkey
+TTYwrite;:j;key_j
+setreg1;---0--
+gotodata;>inkey
+TTYwrite;:k;key_k
+setreg1;---0-0
+gotodata;>inkey
+TTYwrite;:l;key_l
+setreg1;---0-+
+gotodata;>inkey
+TTYwrite;:m;key_m
+setreg1;---00-
+gotodata;>inkey
+TTYwrite;:n;key_n
+setreg1;---000
+gotodata;>inkey
+TTYwrite;:o;key_o
+setreg1;---00+
+gotodata;>inkey
+TTYwrite;:p;key_p
+setreg1;---0+-
+gotodata;>inkey
+TTYwrite;:q;key_q
+setreg1;---0+0
+gotodata;>inkey
+TTYwrite;:r;key_r
+setreg1;---0++
+gotodata;>inkey
+TTYwrite;:s;key_s
+setreg1;---+--
+gotodata;>inkey
+TTYwrite;:t;key_t
+setreg1;---+-0
+gotodata;>inkey
+TTYwrite;:u;key_u
+setreg1;---+-+
+gotodata;>inkey
+TTYwrite;:v;key_v
+setreg1;---+0-
+gotodata;>inkey
+TTYwrite;:w;key_w
+setreg1;---+00
+gotodata;>inkey
+TTYwrite;:x;key_x
+setreg1;---+0+
+gotodata;>inkey
+TTYwrite;:y;key_y
+setreg1;---++-
+gotodata;>inkey
+TTYwrite;:z;key_z
+setreg1;---++0
+gotodata;>inkey
+#]
+
+############################
+### main stack routines
+
+## push
+# pushes reg1 to the stack
+# trashes reg1, mempoint
+
+setdata;>stackreg1bak;push
+romread1;>stacktop
+ptset
+romread1;>stackreg1bak
+ptwri
+ptdec
+ptget
+setdata;>stacktop
+continue
+
+## pop
+# pops top of stack into reg1
+# trashes mempoint
+
+romread1;>stacktop;pop
+ptset
+ptinc
+ptget
+setdata;>stacktop
+ptread
+continue
+
+
+##########################
+### b stack routines
+# optional
+
+## push
+# pushes reg1 to b stack
+# trashes reg1, mempoint
+
+setdata;>stackreg1bak;bpush
+romread1;>bstacktop
+ptset
+romread1;>stackreg1bak
+ptwri
+ptinc
+ptget
+setdata;>bstacktop
+continue
+
+## pop
+# pops top of b stack into reg1
+# trashes mempoint
+
+romread1;>bstacktop;bpop
+ptset
+ptdec
+ptget
+setdata;>bstacktop
+ptread
+continue
+
+
+stop;;allocbase

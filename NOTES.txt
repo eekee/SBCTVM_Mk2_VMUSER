@@ -41,14 +41,6 @@ $ stack
 	$ stack1pt.tasm -- stack1 rewritten with pt* instructions.
 	stack2.tasm -- interactive with tritin
 	>	exists, but much to do
-interrupt routines
-	* example structure for enabling/disabling interrupts
-	* routines to push everything on interrupt, and restore it at end.
-	>>>first see about making scratch memory global.
-inter-trom rpc and data passing
-	intertrom.txt
-7-seg display
-	for easy score display in games
 string handling
 	input from keyboard
 	output to tty
@@ -64,8 +56,15 @@ string handling
 		3 in the 2 data words, 
 		2 in the command words.
 directional movement key routines
-draw string in graphics mode(s)
 linked list traverser
+interrupt routines
+	example structure for enabling/disabling interrupts
+	routines to push everything on interrupt, and restore it at end.
+inter-trom rpc and data passing
+	intertrom.txt
+7-seg display
+	for easy score display in games
+draw string in graphics mode(s)
 
 ~ simple programs
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -283,12 +282,12 @@ DOC BUG:
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 @ FRAMEBUFFER GRAPHICS
 
-choice of low res or very low res. :)
-low res:
-* 114 x 81 x 1-trit mono = 9234 trits = 5% of a 'rom'
-* 114 x 81 x 3 trit color = 27702 trits = 16% of a 'rom'
-very low res:
-* _ x _ x 1-trit mono = _ trits = _% of a 'rom'
+modes:
+code  	#	x	y	t/c	words	%mem
+---------	G0	114	81	3c	3078	16
+--------+	G2	114	81	1m	1026  	5
+-------0-	G3	54	38	3c	684		3.5
+-------00	G4	54	38	1m	228		1.2
 
 requires explicit update. see a generated trom.
 
@@ -319,6 +318,8 @@ the corresponding vertical resolution would be 173 (or maybe 172).
 such a mode would take 4671 words, or 23% of a rom. large, but not impossible.
 with 2:3 pixels, it would have 115 lines and take 3105 words, 16%. 
 same as 3-trit color!
+
+i'd rather have a char cell mode.
 
 ~ roms
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
