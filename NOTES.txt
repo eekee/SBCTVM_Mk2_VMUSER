@@ -91,6 +91,16 @@ clock, analogue
 the two lots of stack code; with vs without pt*
 	maybe include the extra register saving.
 
+~ complex programs
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+forth
+	forth.txt
+	stack code above.
+	> words.tasm -- parser testbed.
+text editor
+	with the forth
+binary computer emulator XD
+
 ~ games
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 simple: key response; single-pixel drawing; no timing; trivial generator
@@ -116,14 +126,6 @@ get ideas for some above from bsd games:
 	i think snake game is 'worm'.
 others from sgt puzzles:
 	???
-
-~ complex programs
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-forth
-	forth.txt
-text editor
-	with the forth
-binary computer emulator XD
 
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@

@@ -2,6 +2,12 @@
 # includes stack1pt
 
 
+### words info:
+
+# pushes chars to the stack as they're entered; a strange way to do it.
+# it's all in inkey, so it could be easy to change.
+
+
 ### stack info:
 
 # namespace:
@@ -137,14 +143,9 @@ keyint;>clear
 # 	space beyond the end of the program is used to compose the word
 #		see "allocbase" below.
 
-# no point jumping over these
-null;;charcount
-
-TTYlinedraw;:on
 textstart
 ...
 textstop
-TTYlinedraw;:off
 
 # clear0 - [re]init for next word - used by clear and proc_word
 setreg1;000000000;clear0
@@ -153,10 +154,59 @@ setdata;>charcount
 null;;spinloop
 gotodata;>spinloop
 
+### words data
+null;;charcount
+null
+null;;compacted
+null
+null;;compactcount
+
 
 # proc_word - dump length and compressed form
 TTYwrite;:enter;proc_word
-...
+# got:
+#	chars on the stack, last on top
+#	charcount
+#	allocbase as the start of memory to put the chars in order
+# done:
+#	compose the chars in order
+#	print the length
+#	print them to show they're in order
+# want to do:
+#	compact 3 chars to a data cell and print the cells
+#		compacted and compactcount -- limit to 9 chars
+
+romread1;>charcount
+setrom2;>allocbase
+add
+ptset
+
+gotodata;>pop;cploop
+ptwri
+ptdec
+ptget
+# allocbase still in reg2; that worked out well
+gotoifgreater;>cploop
+
+# now chars are from allocbase to allocbase+charcount
+
+romread1;>charcount
+TTYwrite;: 
+TTYwrite;:l
+TTYwrite;:e
+TTYwrite;:n
+TTYwrite;:g
+TTYwrite;:t
+TTYwrite;:h
+
+setreg1;>ret1
+gotodata;>bpush
+gotodata;>ttystring
+
+null;;ret1
+
+# >later> compacting code 
+
 gotodata;>clear0
 
 
@@ -177,7 +227,7 @@ gotodata;>clear0
 
 
 # inkey - a word-char key was pressed
-gotodata;>push
+gotodata;>push;inkey
 romread1;>charcount
 setreg2;00000000+
 add
@@ -186,87 +236,112 @@ gotodata;>spinloop
 
 
 ############################
+### print string subroutine
+# my first stack-based subroutine!
+
+# params on the main stack, 
+# return address on the b stack
+
+gotodata;>pop;ttystring
+copy1to2
+gotodata;>pop
+# now length in r2, addr in r1
+
+ptset
+ptread;;ttystring_loop
+setdata;>ttystring_write
+TTYwrite;;ttystring_write
+ptinc
+ptget
+gotodataif;>ttystring_done
+gotodata;>ttystring_loop
+
+gotodata;>bpop;ttystring_done
+gotoreg1
+
+
+############################
 ### interrupt routines
 
-#	<sed 's/(.+)(.)/TTYwrite;:\2;key_\2\nsetreg1;\1\ngotodata;>inkey/; /z/q' ../textdocs/SBTCVM-6-trit-Text-encoding.txt
+#	<sed 's/(.+)(.)/TTYwrite;:\2;key_\2\nsetreg1;---\1\ngotodata;>inkey/; /z/q' ../textdocs/SBTCVM-6-trit-Text-encoding.txt
 #[
 TTYwrite;:a;key_a
-setreg1;------
+setreg1;---------
 gotodata;>inkey
 TTYwrite;:b;key_b
-setreg1;-----0
+setreg1;--------0
 gotodata;>inkey
 TTYwrite;:c;key_c
-setreg1;-----+
+setreg1;--------+
 gotodata;>inkey
 TTYwrite;:d;key_d
-setreg1;----0-
+setreg1;-------0-
 gotodata;>inkey
 TTYwrite;:e;key_e
-setreg1;----00
+setreg1;-------00
 gotodata;>inkey
 TTYwrite;:f;key_f
-setreg1;----0+
+setreg1;-------0+
 gotodata;>inkey
 TTYwrite;:g;key_g
-setreg1;----+-
+setreg1;-------+-
 gotodata;>inkey
 TTYwrite;:h;key_h
-setreg1;----+0
+setreg1;-------+0
 gotodata;>inkey
 TTYwrite;:i;key_i
-setreg1;----++
+setreg1;-------++
 gotodata;>inkey
 TTYwrite;:j;key_j
-setreg1;---0--
+setreg1;------0--
 gotodata;>inkey
 TTYwrite;:k;key_k
-setreg1;---0-0
+setreg1;------0-0
 gotodata;>inkey
 TTYwrite;:l;key_l
-setreg1;---0-+
+setreg1;------0-+
 gotodata;>inkey
 TTYwrite;:m;key_m
-setreg1;---00-
+setreg1;------00-
 gotodata;>inkey
 TTYwrite;:n;key_n
-setreg1;---000
+setreg1;------000
 gotodata;>inkey
 TTYwrite;:o;key_o
-setreg1;---00+
+setreg1;------00+
 gotodata;>inkey
 TTYwrite;:p;key_p
-setreg1;---0+-
+setreg1;------0+-
 gotodata;>inkey
 TTYwrite;:q;key_q
-setreg1;---0+0
+setreg1;------0+0
 gotodata;>inkey
 TTYwrite;:r;key_r
-setreg1;---0++
+setreg1;------0++
 gotodata;>inkey
 TTYwrite;:s;key_s
-setreg1;---+--
+setreg1;------+--
 gotodata;>inkey
 TTYwrite;:t;key_t
-setreg1;---+-0
+setreg1;------+-0
 gotodata;>inkey
 TTYwrite;:u;key_u
-setreg1;---+-+
+setreg1;------+-+
 gotodata;>inkey
 TTYwrite;:v;key_v
-setreg1;---+0-
+setreg1;------+0-
 gotodata;>inkey
 TTYwrite;:w;key_w
-setreg1;---+00
+setreg1;------+00
 gotodata;>inkey
 TTYwrite;:x;key_x
-setreg1;---+0+
+setreg1;------+0+
 gotodata;>inkey
 TTYwrite;:y;key_y
-setreg1;---++-
+setreg1;------++-
 gotodata;>inkey
 TTYwrite;:z;key_z
-setreg1;---++0
+setreg1;------++0
 gotodata;>inkey
 #]
 
