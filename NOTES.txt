@@ -96,7 +96,7 @@ the two lots of stack code; with vs without pt*
 forth
 	forth.txt
 	stack code above.
-	> words.tasm -- parser testbed.
+	$ words.tasm -- parser testbed.
 text editor
 	with the forth
 binary computer emulator XD

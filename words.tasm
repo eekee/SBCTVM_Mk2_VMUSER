@@ -4,8 +4,10 @@
 
 ### words info:
 
-# pushes chars to the stack as they're entered; a strange way to do it.
-# it's all in inkey, so it could be easy to change.
+# pushes chars to the stack as they're entered.
+# perhaps it's a strange way to do it,
+# but it saves writing yet another lot of pointer load/store nonsense, 
+# and it's more testing for the stack code.
 
 
 ### stack info:
@@ -144,7 +146,11 @@ keyint;>clear
 #		see "allocbase" below.
 
 textstart
-...
+Parser test.
+Enter words of alphabetic characters only.
+Special keys:
+    Space: process word
+    Enter: cancel; clear word
 textstop
 
 # clear0 - [re]init for next word - used by clear and proc_word
@@ -177,20 +183,23 @@ TTYwrite;:enter;proc_word
 #		compacted and compactcount -- limit to 9 chars
 
 romread1;>charcount
-setrom2;>allocbase
+setreg2;>allocbase
 add
-ptset
+setdata;>ptrtmp
 
-gotodata;>pop;cploop
-ptwri
-ptdec
-ptget
-# allocbase still in reg2; that worked out well
+setreg2;00000000+;cploop
+subtract
+setdata;>ptrtmp
+gotodata;>pop
+setdata;000000000;ptrtmp
+romread1;>ptrtmp
+setreg2;>allocbase
 gotoifgreater;>cploop
 
 # now chars are from allocbase to allocbase+charcount
 
 romread1;>charcount
+dumpreg1
 TTYwrite;: 
 TTYwrite;:l
 TTYwrite;:e
@@ -198,12 +207,16 @@ TTYwrite;:n
 TTYwrite;:g
 TTYwrite;:t
 TTYwrite;:h
+TTYwrite;:enter
 
+setreg1;>allocbase
+gotodata;>push
+romread1;>charcount
+gotodata;>push
 setreg1;>ret1
 gotodata;>bpush
 gotodata;>ttystring
-
-null;;ret1
+TTYwrite;:enter;ret1
 
 # >later> compacting code 
 
@@ -239,21 +252,28 @@ gotodata;>spinloop
 ### print string subroutine
 # my first stack-based subroutine!
 
-# params on the main stack, 
+# params on the main stack: address; length. 
 # return address on the b stack
 
 gotodata;>pop;ttystring
+setreg2;00000000+
+subtract
+
 copy1to2
 gotodata;>pop
-# now length in r2, addr in r1
-
+# now length in r2, startaddr in r1
 ptset
+regswap
+add
+regswap
+# now endaddr in r2, startaddr in r1
+
 ptread;;ttystring_loop
 setdata;>ttystring_write
 TTYwrite;;ttystring_write
 ptinc
 ptget
-gotodataif;>ttystring_done
+gotoifgreater;>ttystring_done
 gotodata;>ttystring_loop
 
 gotodata;>bpop;ttystring_done
