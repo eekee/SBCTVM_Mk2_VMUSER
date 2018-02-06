@@ -1,6 +1,5 @@
 # stack routines with interactive junk
-
-# >>> pull out tests, copy in tritin stuff
+# uses stack1 code, modified for bstack to grow down.
 
 # keys:
 # +0-	type number
@@ -13,15 +12,15 @@
 ## stack:
 # namespace:
 #	stack* push pop
-# optional:
 #	bstack* bpush bpop
 # after push and pop if needed, restore reg1 like this:
 #	romread1;>stackreg1bak
 
-#>>>>>> to do:
-# [remove b stack code]
+#>>>>>> to do
+# switch bstack to grow down too
+# ¿switch to stackpt?
 # copy in tritin
-# modify key_enter routine to push to stack, with flag to not push 0 for nothing
+# modify key_enter routine to push to stack
 # add p and d key routines
 # display key usage at start, add h key
 # maybe then add some math ops
@@ -55,7 +54,8 @@ gotodata;>bpush
 
 gotodata;BROKE_HERE
 
-## stack dump routines
+##########################
+### stack dump routines
 # can't use continue because they have loops.
 
 romread1;>stacktop;stackdump
@@ -69,8 +69,7 @@ gotodataif;>stackdumpdone
 gotodata;>stackdumploop
 null;;stackdumpdone
 
-
-
+# >>> insert return code
 
 stop
 
