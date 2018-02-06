@@ -51,7 +51,6 @@ string handling
 		there's 3078 unused command words 
 		alongside a 3-trit rgb framebuffer, 
 		enough for some notes!
-		the down side is organizing it.
 	pack 5 chars into 2 locations:
 		3 in the 2 data words, 
 		2 in the command words.

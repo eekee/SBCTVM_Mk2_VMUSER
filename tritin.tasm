@@ -22,6 +22,7 @@ gotodata;>tritin_init
 null;000000000;tritin_number
 null;;tritin_reg1bak
 null;;tritin_reg2bak
+null;000000000;tritin_pressflag
 
 setkeyint;:+;tritin_init
 keyint;>key_plus
@@ -38,11 +39,15 @@ gotodata;>mainloop
 setdata;>tritin_reg1bak;key_enter
 copy2to1
 setdata;>tritin_reg2bak
+romread1;>tritin_pressflag
+setreg2;000000000
+gotodataif;>tritin_null_enter
 romread1;>tritin_number
 dumpreg1
-TTYwrite;:enter
 setreg1;000000000
 setdata;>tritin_number
+setdata;>tritin_pressflag
+TTYwrite;:enter;tritin_null_enter
 romread1;>tritin_reg1bak
 romread2;>tritin_reg2bak
 gotodata;>mainloop
@@ -50,6 +55,8 @@ gotodata;>mainloop
 setdata;>tritin_reg1bak;key_plus
 copy2to1
 setdata;>tritin_reg2bak
+setreg1;+++++++++
+setdata;>tritin_pressflag
 romread1;>tritin_number
 setreg2;0000000+0
 multiply
@@ -64,6 +71,8 @@ gotodata;>mainloop
 setdata;>tritin_reg1bak;key_minus
 copy2to1
 setdata;>tritin_reg2bak
+setreg1;+++++++++
+setdata;>tritin_pressflag
 romread1;>tritin_number
 setreg2;0000000+0
 multiply
@@ -78,6 +87,8 @@ gotodata;>mainloop
 setdata;>tritin_reg1bak;key_zero
 copy2to1
 setdata;>tritin_reg2bak
+setreg1;+++++++++
+setdata;>tritin_pressflag
 romread1;>tritin_number
 setreg2;0000000+0
 multiply
