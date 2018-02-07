@@ -4,7 +4,14 @@ instruction reference:
 assembler source: ../SBTCVM-asm2.py
 grep -n __ ../textdocs/programming-the-VM/* ../textdocs/*
 
+Edit x/./i/\nTTYwrite;:/
+
 would like to fix assembler, it doesn't check syntax.
+
+small bug in assembler. the following crashes it with an IndexError:
+TTYwrite;::
+work around with:
+TTYwrite;----0--++
 
 ../ROMS/
 ../VMSYSTEM/ROMS/
@@ -42,6 +49,7 @@ $ stack
 	stack2.tasm -- interactive with tritin
 	>	exists, but much to do
 string handling
+	../textdocs/SBTCVM-6-trit-Text-encoding.txt
 	input from keyboard
 	output to tty
 	integer<->balanced ternary string conversion
@@ -96,8 +104,10 @@ forth
 	forth.txt
 	stack code above.
 	$ words.tasm -- parser testbed.
-		might seem odd to use the stack like that, 
-		but will save memory allocation weirdness later.
+		>>>i really think i should rewrite squashname, 
+			pushing words to the stack as they're finished, 
+			with no limit.
+		>unsquash code
 text editor
 	with the forth
 binary computer emulator XD

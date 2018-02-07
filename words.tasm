@@ -6,8 +6,11 @@
 
 # pushes chars to the stack as they're entered.
 # perhaps it's a strange way to do it,
-# but it saves writing yet another lot of pointer load/store nonsense, 
-# and it's more testing for the stack code.
+# but it saves writing yet another lot of pointer load/store nonsense.
+# later, it will save messing about with allocating memory or having a
+# fixed size buffer. (allocating is easy, freeing is not.)
+# of course, if the input is only going to be squashed, 
+# then a fixed-size buffer would do fine.
 
 
 ### stack info:
@@ -133,9 +136,7 @@ keyint;>clear
 
 # read a word and compress.
 # on space, dump the length and compressed form.
-# maybe make enter delete, even del word.
-# 	or - delete, + switch mode. no, no modes.
-# maybe later read words to enter, then dump one at a time.
+# enter cancels the word.
 
 # data:
 # input mode:
@@ -169,7 +170,6 @@ null;;compactcount
 
 
 # proc_word - dump length and compressed form
-TTYwrite;:enter;proc_word
 # got:
 #	chars on the stack, last on top
 #	charcount
@@ -182,7 +182,7 @@ TTYwrite;:enter;proc_word
 #	compact 3 chars to a data cell and print the cells
 #		compacted and compactcount -- limit to 9 chars
 
-romread1;>charcount
+romread1;>charcount;proc_word
 setreg2;>allocbase
 add
 setdata;>ptrtmp
@@ -201,13 +201,13 @@ gotoifgreater;>cploop
 romread1;>charcount
 dumpreg1
 TTYwrite;: 
-TTYwrite;:l
-TTYwrite;:e
-TTYwrite;:n
-TTYwrite;:g
-TTYwrite;:t
+TTYwrite;:c
 TTYwrite;:h
-TTYwrite;:enter
+TTYwrite;:a
+TTYwrite;:r
+TTYwrite;:s
+TTYwrite;:,
+TTYwrite;: 
 
 setreg1;>allocbase
 gotodata;>push
@@ -218,7 +218,37 @@ gotodata;>bpush
 gotodata;>ttystring
 TTYwrite;:enter;ret1
 
-# >later> compacting code 
+setreg1;>allocbase
+gotodata;>push
+romread1;>charcount
+gotodata;>push
+setreg1;>ret2
+gotodata;>bpush
+gotodata;>squashname
+
+# dump the squashed values
+TTYwrite;:s;ret2
+TTYwrite;:q
+TTYwrite;:u
+TTYwrite;:a
+TTYwrite;:s
+TTYwrite;:h
+TTYwrite;:e
+TTYwrite;:d
+TTYwrite;----0--++
+gotodata;>pop
+dumpreg1
+TTYwrite;: 
+TTYwrite;:-
+gotodata;>pop
+dumpreg1
+TTYwrite;: 
+TTYwrite;:0
+gotodata;>pop
+dumpreg1
+TTYwrite;: 
+TTYwrite;:+
+TTYwrite;:enter
 
 gotodata;>clear0
 
@@ -266,7 +296,7 @@ ptset
 regswap
 add
 regswap
-# now endaddr in r2, startaddr in r1
+# now endaddr in r2
 
 ptread;;ttystring_loop
 setdata;>ttystring_write
@@ -278,6 +308,113 @@ gotodata;>ttystring_loop
 
 gotodata;>bpop;ttystring_done
 gotoreg1
+
+
+############################
+### squashname subroutine
+# (string-address, -length -- squashed-first, -second, -third)
+# ((meaning first pop gets the first squashed chars.))
+
+# minimize the length of an alphabetic string
+# for faster dictionary lookup.
+# use 3 words to store up to 9 characters.
+# a-z as --- to ++0; null as +++
+
+# it's a bit long. i think it would be better if organized differently.
+
+gotodata;>pop;squashname
+setreg2;00000000+
+subtract
+
+copy1to2
+gotodata;>pop
+# now length in r2, startaddr in r1
+setdata;>squashname.start
+regswap
+add
+setdata;>squashname.end
+
+setreg1;+++++++++
+setdata;>squashname.squashed.n
+setdata;>squashname.squashed.z
+setdata;>squashname.squashed.p
+
+romread1;>squashname.start
+ptset
+
+setreg1;>squashname.squashed.n
+setdata;>squashname.squite
+
+
+ptread;;squashname.loop
+offsetlen;off,0,3
+gotodata;>squashname.squite
+offsetlen;off,0,9
+ptinc
+ptget
+romread2;>squashname.end
+gotoifgreater;>squashname.done
+
+ptread
+offsetlen;on,0,3
+setdata;>squashname.shifty
+offsetlen;off,0,9
+romread1;>squashname.shifty
+setreg2;00000+000
+multiply
+offsetlen;off,3,3
+gotodata;>squashname.squite
+offsetlen;off,0,9
+ptinc
+ptget
+romread2;>squashname.end
+gotoifgreater;>squashname.done
+
+ptread
+offsetlen;on,0,3
+setdata;>squashname.shifty
+offsetlen;off,0,9
+romread1;>squashname.shifty
+setreg2;00+000000
+multiply
+offsetlen;off,6,3
+gotodata;>squashname.squite
+offsetlen;off,0,9
+ptinc
+ptget
+romread2;>squashname.end
+gotoifgreater;>squashname.done
+
+romread1;>squashname.squite
+setreg2;00000000+
+add
+setreg2;>squashname.squashed.p
+gotoifgreater;>squashname.done
+setdata;>squashname.squite
+
+gotodata;>squashname.loop
+
+
+romread1;>squashname.squashed.p;squashname.done
+gotodata;>push
+romread1;>squashname.squashed.z
+gotodata;>push
+romread1;>squashname.squashed.n
+gotodata;>push
+
+gotodata;>bpop
+gotoreg1
+
+
+setdata;;squashname.squite
+continue
+
+null;;squashname.squashed.n
+null;;squashname.squashed.z
+null;;squashname.squashed.p
+null;;squashname.start
+null;;squashname.end
+null;;squashname.shifty
 
 
 ############################
