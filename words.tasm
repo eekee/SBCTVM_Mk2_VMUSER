@@ -22,7 +22,9 @@
 # push and pop reg1 only. use regswap etc. for reg2.
 
 # interrupts should probably be disabled while using any of these routines.
-### risking it this time!
+# risking it this time!
+# it can go wrong! press 2 chars together and you may get only one.
+# whether there's any leakage when that happens, i don't know.
 
 # the push routines (main and b) save reg1 out of necessity,
 # so if you need to preserve it you can omit the save, and 
