@@ -1,0 +1,296 @@
+# scal -- rpn calculator based on stack1 and tritin.
+# uses stack1 code, modified for bstack to grow down.
+# uses tritin code.
+
+gotodata;>start
+
+#>>>>>> to do
+# write trash subroutine
+# add routines for keys:
+#	uasmdpcex
+# set key interrupts for:
+#	tuasmdpcexh
+
+setreg1;>helpret;help
+gotodata;>push
+gotodata;>trash
+null;;helpret
+textstart
+Scal: RPN calculator
+
+Keys:
+ + 0 -  type number
+ enter  push number
+ t      trash the number you are entering
+
+ a      add second to top of stack
+ s      subtract second from top of stack
+ m      multiply top by second of stack
+ d      divide top by second of stack
+
+ p      pop: discard top of stack
+ e      empty the stack
+ c      copy: duplicate top of stack
+ x      exchange the top 2 stack elements
+
+ l      list all stack elements
+ h      this help
+textstop
+gotodata;>mainloop
+
+
+### limits needs and details:
+
+## stack:
+# namespace:
+#	stack* push pop
+#	bstack* bpush bpop
+# after push and pop, if needed restore reg1 like this:
+#	romread1;>stackreg1bak
+# these are my first stack routines, the ones which don't use mempoint.
+# they use reg1 and reg2. i'm using these because i will in forth too.
+# the only change to them is switching bstack to grow down too.
+
+## tritin:
+# namespace:
+#	tritin_* key_*
+# the interrupts save registers, but cannot use "continue".
+# key_enter now pushes to stack.
+
+## scal:
+# uses bstack as the data stack, main stack as the return stack.
+
+
+# stack pointer etc
+null;+++++++++;stackbase
+null;;stacktop
+null;;stackreg1bak
+null;+++------;bstackbase
+null;;bstacktop
+
+# some bstackbase values with space for
+# the main stack and remaining memory:
+# +++------	728  		18955
+# ++-------	2186		17497
+# +--------	6560		13123
+
+
+null;;start
+
+romread1;>stackbase;stackinit
+setdata;>stacktop
+# if not using bstack omit remainder
+romread1;>bstackbase
+setdata;>bstacktop
+# underflow marker for bstack, may help in debugging;
+# 2 lines doubly optional:
+setreg1;-+-+-+-+-
+gotodata;>bpush
+
+
+gotodata;>tritin_init
+
+null;000000000;tritin_number
+null;;tritin_reg1bak
+null;;tritin_reg2bak
+null;000000000;tritin_pressflag
+
+setkeyint;:+;tritin_init
+keyint;>key_plus
+setkeyint;:0
+keyint;>key_zero
+setkeyint;:-
+keyint;>key_minus
+setkeyint;:enter
+keyint;>key_enter
+
+gotodata;>help
+
+null;;mainloop
+gotodata;>mainloop
+
+
+
+
+gotodata;BROKE_HERE
+
+
+
+##########################
+### stack dump routines
+# can't use continue because they have loops.
+
+romread1;>stacktop;stackdump
+setreg2;00000000-;stackdumploop
+subtract
+setdata;>stackdump1
+romread2;000000000;stackdump1
+dumpreg2
+romread2;>stackbase
+gotodataif;>stackdumpdone
+gotodata;>stackdumploop
+null;;stackdumpdone
+
+# >>> insert return code
+
+stop
+
+
+##########################
+### other example code
+
+## subroutine call
+
+# call:
+setreg1;>retpt
+gotodata;>push
+gotodata;>subr
+null;;retpt
+
+# note registers trashed by the push before the call.
+# they could be reloaded between the two gotodatas.
+
+null;;subr
+# ...
+# return:
+gotodata;>pop
+gotoreg1
+
+## to reset the stack, copy stackinit
+
+
+############################
+### main stack routines
+
+## push
+# pushes reg1 to the stack
+# trashes reg1, reg2
+
+setdata;>stackreg1bak;push
+
+romread1;>stacktop
+setdata;>stackpushme
+romread1;>stackreg1bak
+setdata;000000000;stackpushme
+
+romread1;>stacktop
+setreg2;00000000-
+add
+setdata;>stacktop
+
+continue
+
+## pop
+# pops top of stack into reg1
+# trashes reg2
+
+romread1;>stacktop;pop
+setreg2;00000000-
+subtract
+setdata;>stacktop
+setdata;>stackpopme
+romread1;000000000;stackpopme
+continue
+
+
+##########################
+### b stack routines
+# optional
+
+## push
+# pushes reg1 to b stack
+# trashes reg1, reg2
+
+setdata;>stackreg1bak;bpush
+romread1;>bstacktop
+setdata;>bstackpushme
+romread1;>stackreg1bak
+setdata;000000000;bstackpushme
+romread1;>bstacktop
+setreg2;00000000-
+add
+setdata;>bstacktop
+romread1;>stackreg1bak
+continue
+
+## pop
+# pops top of b stack into reg1
+# trashes reg2
+
+romread1;>bstacktop;bpop
+setreg2;00000000-
+subtract
+setdata;>bstacktop
+setdata;>bstackpopme
+romread1;000000000;bstackpopme
+continue
+
+
+##########################
+### tritin key routines
+
+setdata;>tritin_reg1bak;key_enter
+copy2to1
+setdata;>tritin_reg2bak
+romread1;>tritin_pressflag
+setreg2;000000000
+gotodataif;>tritin_null_enter
+romread1;>tritin_number
+dumpreg1
+gotodata;>bpush
+setreg1;000000000
+setdata;>tritin_number
+setdata;>tritin_pressflag
+TTYwrite;:enter;tritin_null_enter
+romread1;>tritin_reg1bak
+romread2;>tritin_reg2bak
+gotodata;>mainloop
+
+setdata;>tritin_reg1bak;key_plus
+copy2to1
+setdata;>tritin_reg2bak
+setreg1;+++++++++
+setdata;>tritin_pressflag
+romread1;>tritin_number
+setreg2;0000000+0
+multiply
+setreg2;00000000+
+add
+setdata;>tritin_number
+romread1;>tritin_reg1bak
+romread2;>tritin_reg2bak
+TTYwrite;:+
+gotodata;>mainloop
+
+setdata;>tritin_reg1bak;key_minus
+copy2to1
+setdata;>tritin_reg2bak
+setreg1;+++++++++
+setdata;>tritin_pressflag
+romread1;>tritin_number
+setreg2;0000000+0
+multiply
+setreg2;00000000-
+add
+setdata;>tritin_number
+romread1;>tritin_reg1bak
+romread2;>tritin_reg2bak
+TTYwrite;:-
+gotodata;>mainloop
+
+setdata;>tritin_reg1bak;key_zero
+copy2to1
+setdata;>tritin_reg2bak
+setreg1;+++++++++
+setdata;>tritin_pressflag
+romread1;>tritin_number
+setreg2;0000000+0
+multiply
+setdata;>tritin_number
+romread1;>tritin_reg1bak
+romread2;>tritin_reg2bak
+TTYwrite;:0
+gotodata;>mainloop
+
+
+stop

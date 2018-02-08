@@ -46,8 +46,11 @@ $ stack
 	vital! there is no stack and only single-level return. (continue.tasm)
 	$ stack1.tasm -- base with tests
 	$ stack1pt.tasm -- stack1 rewritten with pt* instructions.
-	stack2.tasm -- interactive with tritin
-	>	exists, but much to do
+		perhaps not the best idea. it doesn't really save any 
+		instructions in push or pop, and it's very useful for 
+		long runs of data elsewhere. saving it to call push or 
+		pop is more instructions than saving reg2.
+	renamed stack2 as scal, moved it to simple programs.
 string handling
 	../textdocs/SBTCVM-6-trit-Text-encoding.txt
 	input from keyboard
@@ -55,17 +58,15 @@ string handling
 	integer<->balanced ternary string conversion
 	integer<->decimal string conversion
 	store text in command words
-		same size, 6 trits.
-		there's 3078 unused command words 
-		alongside a 3-trit rgb framebuffer, 
-		enough for some notes!
+		same size, 6 trits. there's 3078 unused command words 
+		alongside a 3-trit rgb framebuffer. enough for some notes!
 	pack 5 chars into 2 locations:
 		3 in the 2 data words, 
 		2 in the command words.
 directional movement key routines
 linked list traverser
 interrupt routines
-	example structure for enabling/disabling interrupts
+	example structure for enabling/disabling interrupts.
 	routines to push everything on interrupt, and restore it at end.
 inter-trom rpc and data passing
 	intertrom.txt
@@ -85,8 +86,7 @@ palette in the color framebuffer
 	now i see how slow filling the screen is, 
 	i'm feeling less enthusiastic about mk2 graphics in general.
 calculator, tty display
-	calculation operations could easily be added to stack2
-	for a rpn calculator.
+	>>> $ scal.tasm -- rpn calculator based on stack1 and tritin.
 calculator, graphical display
 clock, digital
 	7-seg in the mini color display

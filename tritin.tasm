@@ -36,6 +36,10 @@ keyint;>key_enter
 null;;mainloop
 gotodata;>mainloop
 
+
+##########################
+### tritin key routines
+
 setdata;>tritin_reg1bak;key_enter
 copy2to1
 setdata;>tritin_reg2bak
