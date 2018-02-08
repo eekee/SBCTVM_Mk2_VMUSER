@@ -1,0 +1,152 @@
+gotodata;>DONTASSEMBLE
+
+this is a rejected routine from words.tasm .
+it's meant to compact 3 lower-case alphabetic 
+characters into each data location.
+the idea was faster dictionary lookup in forth, 
+but it's rather long and a little hard to debug.
+it's holding me back, so 
+i'm putting it away unless and until i see a need 
+to improve dictionary lookup speed.
+
+this version is meant to push the squashed words to the stack.
+it's broken: the loop does not terminate until some error,
+probably the stack overwrites code.
+
+a previous (working) version stored only 9 chars in 3 words.
+it's in the git history of words.tasm.
+
+# call squashname:
+setreg1;>allocbase
+gotodata;>push
+romread1;>charcount
+gotodata;>push
+setreg1;>ret2
+gotodata;>bpush
+gotodata;>squashname
+
+# dump the squashed values
+TTYwrite;:s;ret2
+TTYwrite;:q
+TTYwrite;:u
+TTYwrite;:a
+TTYwrite;:s
+TTYwrite;:h
+TTYwrite;:e
+TTYwrite;:d
+TTYwrite;----0--++
+gotodata;>pop
+dumpreg1
+TTYwrite;: 
+TTYwrite;:l
+TTYwrite;:e
+TTYwrite;:n
+copy1to2;;sqpoploop
+gotodata;>pop
+dumpreg1
+setreg1;00000000-
+add
+setreg2;000000000
+gotoifgreater;>sqpoploop
+TTYwrite;:enter
+
+
+############################
+### squashname subroutine
+# (string-address, -length -- squashed..., count)
+# ((meaning first pop gets the first squashed chars.))
+
+# minimize the length of an alphabetic string
+# for faster dictionary lookup.
+# store 3 characters to a word,
+# a-z as --- to ++0; null as +++
+
+# little-endian: stores the first char in the lowest trits.
+
+#>>>testing on stack version
+#		update other code
+
+gotodata;>pop;squashname
+copy1to2
+gotodata;>pop
+# now length in r2, startaddr in r1
+dumpreg1
+dumpreg2
+setdata;>squashname.start
+add
+setdata;>squashname.end
+dumpreg1
+TTYwrite;:enter
+setreg1;000000000
+setdata;>squashname.count
+
+setreg1;+++++++++;squashname.loop
+setdata;>squashname.squashed
+romread1;>squashname.count
+setreg2;00000000+
+add
+setdata;>squashname.count
+romread1;>squashname.start
+ptset
+
+ptread
+offsetlen;off,0,3
+setdata;>squashname.squashed
+offsetlen;off,0,9
+ptinc
+ptget
+romread2;>squashname.end
+gotodataif;>squashname.done
+
+ptread
+offsetlen;on,0,3
+setdata;>squashname.shifty
+offsetlen;off,0,9
+romread1;>squashname.shifty
+setreg2;00000+000
+multiply
+offsetlen;off,3,3
+setdata;>squashname.squashed
+offsetlen;off,0,9
+ptinc
+ptget
+romread2;>squashname.end
+gotodataif;>squashname.done
+
+ptread
+offsetlen;on,0,3
+setdata;>squashname.shifty
+offsetlen;off,0,9
+romread1;>squashname.shifty
+setreg2;00+000000
+multiply
+offsetlen;off,6,3
+setdata;>squashname.squashed
+offsetlen;off,0,9
+ptinc
+ptget
+romread2;>squashname.end
+gotodataif;>squashname.done
+
+romread1;>squashname.squashed
+gotodata;>push
+
+gotodata;>squashname.loop
+
+
+romread1;>squashname.squashed;squashname.done
+gotodata;>push
+romread1;>squashname.count
+gotodata;>push
+gotodata;>bpop
+gotoreg1
+
+
+setdata;;squashname.squite
+continue
+
+null;;squashname.squashed
+null;;squashname.start
+null;;squashname.end
+null;;squashname.shifty
+null;;squashname.count

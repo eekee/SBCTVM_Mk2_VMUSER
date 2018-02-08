@@ -9,8 +9,6 @@
 # but it saves writing yet another lot of pointer load/store nonsense.
 # later, it will save messing about with allocating memory or having a
 # fixed size buffer. (allocating is easy, freeing is not.)
-# of course, if the input is only going to be squashed, 
-# then a fixed-size buffer would do fine.
 
 
 ### stack info:
@@ -180,9 +178,6 @@ null;;compactcount
 #	compose the chars in order
 #	print the length
 #	print them to show they're in order
-# want to do:
-#	compact 3 chars to a data cell and print the cells
-#		compacted and compactcount -- limit to 9 chars
 
 romread1;>charcount;proc_word
 setreg2;>allocbase
@@ -219,38 +214,6 @@ setreg1;>ret1
 gotodata;>bpush
 gotodata;>ttystring
 TTYwrite;:enter;ret1
-
-setreg1;>allocbase
-gotodata;>push
-romread1;>charcount
-gotodata;>push
-setreg1;>ret2
-gotodata;>bpush
-gotodata;>squashname
-
-# dump the squashed values
-TTYwrite;:s;ret2
-TTYwrite;:q
-TTYwrite;:u
-TTYwrite;:a
-TTYwrite;:s
-TTYwrite;:h
-TTYwrite;:e
-TTYwrite;:d
-TTYwrite;----0--++
-gotodata;>pop
-dumpreg1
-TTYwrite;: 
-TTYwrite;:-
-gotodata;>pop
-dumpreg1
-TTYwrite;: 
-TTYwrite;:0
-gotodata;>pop
-dumpreg1
-TTYwrite;: 
-TTYwrite;:+
-TTYwrite;:enter
 
 gotodata;>clear0
 
@@ -310,113 +273,6 @@ gotodata;>ttystring_loop
 
 gotodata;>bpop;ttystring_done
 gotoreg1
-
-
-############################
-### squashname subroutine
-# (string-address, -length -- squashed-first, -second, -third)
-# ((meaning first pop gets the first squashed chars.))
-
-# minimize the length of an alphabetic string
-# for faster dictionary lookup.
-# use 3 words to store up to 9 characters.
-# a-z as --- to ++0; null as +++
-
-# it's a bit long. i think it would be better if organized differently.
-
-gotodata;>pop;squashname
-setreg2;00000000+
-subtract
-
-copy1to2
-gotodata;>pop
-# now length in r2, startaddr in r1
-setdata;>squashname.start
-regswap
-add
-setdata;>squashname.end
-
-setreg1;+++++++++
-setdata;>squashname.squashed.n
-setdata;>squashname.squashed.z
-setdata;>squashname.squashed.p
-
-romread1;>squashname.start
-ptset
-
-setreg1;>squashname.squashed.n
-setdata;>squashname.squite
-
-
-ptread;;squashname.loop
-offsetlen;off,0,3
-gotodata;>squashname.squite
-offsetlen;off,0,9
-ptinc
-ptget
-romread2;>squashname.end
-gotoifgreater;>squashname.done
-
-ptread
-offsetlen;on,0,3
-setdata;>squashname.shifty
-offsetlen;off,0,9
-romread1;>squashname.shifty
-setreg2;00000+000
-multiply
-offsetlen;off,3,3
-gotodata;>squashname.squite
-offsetlen;off,0,9
-ptinc
-ptget
-romread2;>squashname.end
-gotoifgreater;>squashname.done
-
-ptread
-offsetlen;on,0,3
-setdata;>squashname.shifty
-offsetlen;off,0,9
-romread1;>squashname.shifty
-setreg2;00+000000
-multiply
-offsetlen;off,6,3
-gotodata;>squashname.squite
-offsetlen;off,0,9
-ptinc
-ptget
-romread2;>squashname.end
-gotoifgreater;>squashname.done
-
-romread1;>squashname.squite
-setreg2;00000000+
-add
-setreg2;>squashname.squashed.p
-gotoifgreater;>squashname.done
-setdata;>squashname.squite
-
-gotodata;>squashname.loop
-
-
-romread1;>squashname.squashed.p;squashname.done
-gotodata;>push
-romread1;>squashname.squashed.z
-gotodata;>push
-romread1;>squashname.squashed.n
-gotodata;>push
-
-gotodata;>bpop
-gotoreg1
-
-
-setdata;;squashname.squite
-continue
-
-null;;squashname.squashed.n
-null;;squashname.squashed.z
-null;;squashname.squashed.p
-null;;squashname.start
-null;;squashname.end
-null;;squashname.shifty
 
 
 ############################

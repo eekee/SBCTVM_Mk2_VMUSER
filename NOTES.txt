@@ -104,10 +104,7 @@ forth
 	forth.txt
 	stack code above.
 	$ words.tasm -- parser testbed.
-		>>>i really think i should rewrite squashname, 
-			pushing words to the stack as they're finished, 
-			with no limit.
-		>unsquash code
+	squashname is an optimization which was holding me back.
 text editor
 	with the forth
 binary computer emulator XD
@@ -117,7 +114,7 @@ binary computer emulator XD
 simple: key response; single-pixel drawing; no timing; trivial generator
 	robots
 	black box
-simple running as above, but perhaps more coding work
+simple running as above, but perhaps more coding work:
 	hangman
 		word list needs composition and several routines.
 	unequal
