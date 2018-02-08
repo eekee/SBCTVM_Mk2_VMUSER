@@ -1,15 +1,16 @@
 # scal -- rpn calculator based on stack1 and tritin.
 # uses stack1 code, modified for bstack to grow down.
+# 	uses bstack as the data stack, main stack as the return stack.
 # uses tritin code.
-
-gotodata;>start
 
 #>>>>>> to do
 # write trash subroutine
 # add routines for keys:
-#	uasmdpcex
+#	asmdpecx
 # set key interrupts for:
-#	tuasmdpcexh
+#	asmdpecxl
+
+gotodata;>start
 
 setreg1;>helpret;help
 gotodata;>push
@@ -33,7 +34,7 @@ Keys:
  c      copy: duplicate top of stack
  x      exchange the top 2 stack elements
 
- l      list all stack elements
+ l      list all stack elements (includes stack guard)
  h      this help
 textstop
 gotodata;>mainloop
@@ -58,7 +59,8 @@ gotodata;>mainloop
 # key_enter now pushes to stack.
 
 ## scal:
-# uses bstack as the data stack, main stack as the return stack.
+# for major items, see top.
+# various others. it's end program, not stock code.
 
 
 # stack pointer etc
@@ -95,6 +97,9 @@ null;;tritin_reg1bak
 null;;tritin_reg2bak
 null;000000000;tritin_pressflag
 
+
+### tritin keys
+
 setkeyint;:+;tritin_init
 keyint;>key_plus
 setkeyint;:0
@@ -104,6 +109,15 @@ keyint;>key_minus
 setkeyint;:enter
 keyint;>key_enter
 
+### scal keys
+
+setkeyint;:t
+keyint;>key_t
+setkeyint;:h
+keyint;>help
+
+
+
 gotodata;>help
 
 null;;mainloop
@@ -111,33 +125,55 @@ gotodata;>mainloop
 
 
 
-
-gotodata;BROKE_HERE
-
-
-
 ##########################
-### stack dump routines
-# can't use continue because they have loops.
+### scal routines
 
-romread1;>stacktop;stackdump
-setreg2;00000000-;stackdumploop
+## help routine at top
+
+## trash
+# clear tritin's entered number
+# trashes reg1, reg2
+# subroutine, unlike the others
+
+romread1;>tritin_pressflag;trash
+setreg2;000000000
+gotodataif;>trash.alreadyclear
+textstart
+--cleared--
+texstop
+setreg1;000000000
+setdata;>tritin_number
+setdata;>tritin_pressflag
+gotodata;>pop;trash.alreadyclear
+gotoreg1
+
+# t key routine
+# call trash with funky return address
+setreg1;>mainloop
+gotodata;>push
+gotodata;>trash
+
+
+## stack dump, or 'list' in scal parlance
+# straight from stack1, with a trash call tacked on
+
+setreg1;>list.ret;list
+gotodata;>push
+gotodata;>trash
+romread1;>bstacktop;list.ret
+setreg2;00000000+;bstackdumploop
 subtract
-setdata;>stackdump1
-romread2;000000000;stackdump1
+setdata;>bstackdump1
+romread2;000000000;bstackdump1
 dumpreg2
-romread2;>stackbase
-gotodataif;>stackdumpdone
-gotodata;>stackdumploop
-null;;stackdumpdone
-
-# >>> insert return code
-
-stop
+romread2;>bstackbase
+gotodataif;>bstackdumpdone
+gotodata;>bstackdumploop
+gotodata;>mainloop;bstackdumpdone
 
 
 ##########################
-### other example code
+### stack example code
 
 ## subroutine call
 
