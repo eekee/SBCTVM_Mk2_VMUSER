@@ -6,9 +6,11 @@
 #>>>>>> to do
 # write trash subroutine
 # add routines for keys:
-#	asmdpecx
+#	asmd
 # set key interrupts for:
-#	asmdpecxl
+#	asmd
+# have each command print the command before executing, after trash.
+# fix bugs:
 
 gotodata;>start
 
@@ -16,6 +18,7 @@ setreg1;>helpret;help
 gotodata;>push
 gotodata;>trash
 null;;helpret
+TTYlinedraw;on
 textstart
 Scal: RPN calculator
 
@@ -24,10 +27,10 @@ Keys:
  enter  push number
  t      trash the number you are entering
 
- a      add second to top of stack
- s      subtract second from top of stack
- m      multiply top by second of stack
- d      divide top by second of stack
+ a      add top to second of stack
+ s      subtract top from second of stack
+ m      multiply second by top of stack
+ d      divide second by top of stack
 
  p      pop: discard top of stack
  e      empty the stack
@@ -36,8 +39,11 @@ Keys:
 
  l      list all stack elements (includes stack guard)
  h      this help
+
+The top of stack is printed after every command.
 textstop
-gotodata;>mainloop
+TTYlinedraw;off
+gotodata;>main
 
 
 ### limits needs and details:
@@ -61,6 +67,10 @@ gotodata;>mainloop
 ## scal:
 # for major items, see top.
 # various others. it's end program, not stock code.
+
+
+null;;scal.a
+null;;scal.b
 
 
 # stack pointer etc
@@ -115,10 +125,25 @@ setkeyint;:t
 keyint;>key_t
 setkeyint;:h
 keyint;>help
+setkeyint;:l
+keyint;>list
+setkeyint;:x
+keyint;>swap
+setkeyint;:c
+keyint;>dup
+setkeyint;:e
+keyint;>empty
+setkeyint;:p
+keyint;>drop
 
 
 
 gotodata;>help
+
+gotodata;>bpop;main
+dumpreg1
+gotodata;>bpush
+TTYwrite;:enter
 
 null;;mainloop
 gotodata;>mainloop
@@ -139,8 +164,8 @@ romread1;>tritin_pressflag;trash
 setreg2;000000000
 gotodataif;>trash.alreadyclear
 textstart
---cleared--
-texstop
+<<cleared>>
+textstop
 setreg1;000000000
 setdata;>tritin_number
 setdata;>tritin_pressflag
@@ -148,8 +173,8 @@ gotodata;>pop;trash.alreadyclear
 gotoreg1
 
 # t key routine
-# call trash with funky return address
-setreg1;>mainloop
+# call trash with mainloop return address
+setreg1;>main;key_t
 gotodata;>push
 gotodata;>trash
 
@@ -162,14 +187,68 @@ gotodata;>push
 gotodata;>trash
 romread1;>bstacktop;list.ret
 setreg2;00000000+;bstackdumploop
-subtract
+add
 setdata;>bstackdump1
 romread2;000000000;bstackdump1
 dumpreg2
 romread2;>bstackbase
 gotodataif;>bstackdumpdone
 gotodata;>bstackdumploop
-gotodata;>mainloop;bstackdumpdone
+TTYwrite;:enter;bstackdumpdone
+gotodata;>main
+
+
+## swap: exchange the top 2 stack elements
+
+setreg1;>swap.ret;swap
+gotodata;>push
+gotodata;>trash
+gotodata;>bpop;swap.ret
+setdata;>scal.a
+gotodata;>bpop
+setdata;>scal.b
+romread1;>scal.a
+gotodata;>bpush
+romread1;>scal.b
+gotodata;>bpush
+gotodata;>main
+
+
+## dup: duplicate (copy) top of stack
+
+setreg1;>dup.ret;dup
+gotodata;>push
+gotodata;>trash
+gotodata;>bpop;dup.ret
+gotodata;>bpush
+romread1;>stackreg1bak
+gotodata;>bpush
+gotodata;>main
+
+
+## empty stack
+
+setreg1;>empty.ret;empty
+gotodata;>push
+gotodata;>trash
+romread1;>bstackbase;empty.ret
+setdata;>bstacktop
+setreg1;-+-+-+-+-
+gotodata;>bpush
+gotodata;>main
+
+
+## drop
+
+setreg1;>drop.ret;drop
+gotodata;>push
+gotodata;>trash
+gotodata;>bpop;drop.ret
+gotodata;>main
+
+
+## add, subtract, multiply, divide
+# they're all the same except for the central instruction.
 
 
 ##########################
