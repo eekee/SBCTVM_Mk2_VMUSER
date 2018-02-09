@@ -1,16 +1,12 @@
 # scal -- rpn calculator based on stack1 and tritin.
-# uses stack1 code, modified for bstack to grow down.
-# 	uses bstack as the data stack, main stack as the return stack.
-# uses tritin code.
 
-#>>>>>> to do
-# write trash subroutine
-# add routines for keys:
-#	asmd
-# set key interrupts for:
-#	asmd
-# have each command print the command before executing, after trash.
-# fix bugs:
+# may be useful for aclimating to balanced ternary
+# input and stack mechanics.
+# terminology chosen to correspond to keys,
+# not to forth.
+
+# could use 'over' and 'rotate', 
+# but it's basically complete.
 
 gotodata;>start
 
@@ -40,7 +36,7 @@ Keys:
  l      list all stack elements (includes stack guard)
  h      this help
 
-The top of stack is printed after every command.
+Top of stack is printed after every command except l.
 textstop
 TTYlinedraw;off
 gotodata;>main
@@ -65,7 +61,9 @@ gotodata;>main
 # key_enter now pushes to stack.
 
 ## scal:
-# for major items, see top.
+# uses stack1 code, modified for bstack to grow down.
+# 	uses bstack as the data stack, main stack as the return stack.
+# uses tritin code.
 # various others. it's end program, not stock code.
 
 
@@ -135,7 +133,14 @@ setkeyint;:e
 keyint;>empty
 setkeyint;:p
 keyint;>drop
-
+setkeyint;:a
+keyint;>add
+setkeyint;:s
+keyint;>sub
+setkeyint;:m
+keyint;>mul
+setkeyint;:d
+keyint;>div
 
 
 gotodata;>help
@@ -163,9 +168,11 @@ gotodata;>mainloop
 romread1;>tritin_pressflag;trash
 setreg2;000000000
 gotodataif;>trash.alreadyclear
+TTYlinedraw;on
 textstart
 <<cleared>>
 textstop
+TTYlinedraw;off
 setreg1;000000000
 setdata;>tritin_number
 setdata;>tritin_pressflag
@@ -181,11 +188,16 @@ gotodata;>trash
 
 ## stack dump, or 'list' in scal parlance
 # straight from stack1, with a trash call tacked on
+# ... and the direction reversed. oops!
 
 setreg1;>list.ret;list
 gotodata;>push
 gotodata;>trash
-romread1;>bstacktop;list.ret
+TTYwrite;:l;list.ret
+TTYwrite;:i
+TTYwrite;:s
+TTYwrite;:t
+romread1;>bstacktop
 setreg2;00000000+;bstackdumploop
 add
 setdata;>bstackdump1
@@ -195,7 +207,7 @@ romread2;>bstackbase
 gotodataif;>bstackdumpdone
 gotodata;>bstackdumploop
 TTYwrite;:enter;bstackdumpdone
-gotodata;>main
+gotodata;>mainloop
 
 
 ## swap: exchange the top 2 stack elements
@@ -203,7 +215,15 @@ gotodata;>main
 setreg1;>swap.ret;swap
 gotodata;>push
 gotodata;>trash
-gotodata;>bpop;swap.ret
+TTYwrite;:e;swap.ret
+TTYwrite;:x
+TTYwrite;:c
+TTYwrite;:h
+TTYwrite;:a
+TTYwrite;:n
+TTYwrite;:g
+TTYwrite;:e
+gotodata;>bpop
 setdata;>scal.a
 gotodata;>bpop
 setdata;>scal.b
@@ -219,7 +239,11 @@ gotodata;>main
 setreg1;>dup.ret;dup
 gotodata;>push
 gotodata;>trash
-gotodata;>bpop;dup.ret
+TTYwrite;:c;dup.ret
+TTYwrite;:o
+TTYwrite;:p
+TTYwrite;:y
+gotodata;>bpop
 gotodata;>bpush
 romread1;>stackreg1bak
 gotodata;>bpush
@@ -231,7 +255,12 @@ gotodata;>main
 setreg1;>empty.ret;empty
 gotodata;>push
 gotodata;>trash
-romread1;>bstackbase;empty.ret
+TTYwrite;:e;empty.ret
+TTYwrite;:m
+TTYwrite;:p
+TTYwrite;:t
+TTYwrite;:y
+romread1;>bstackbase
 setdata;>bstacktop
 setreg1;-+-+-+-+-
 gotodata;>bpush
@@ -243,35 +272,84 @@ gotodata;>main
 setreg1;>drop.ret;drop
 gotodata;>push
 gotodata;>trash
-gotodata;>bpop;drop.ret
+TTYwrite;:p;drop.ret
+TTYwrite;:o
+TTYwrite;:p
+gotodata;>bpop
 gotodata;>main
 
 
 ## add, subtract, multiply, divide
 # they're all the same except for the central instruction.
 
-
-##########################
-### stack example code
-
-## subroutine call
-
-# call:
-setreg1;>retpt
+setreg1;>add.ret;add
 gotodata;>push
-gotodata;>subr
-null;;retpt
+gotodata;>trash
+TTYwrite;:a;add.ret
+TTYwrite;:d
+TTYwrite;:d
+gotodata;>bpop
+setdata;>scal.a
+gotodata;>bpop
+romread2;>scal.a
+add
+gotodata;>bpush
+gotodata;>main
 
-# note registers trashed by the push before the call.
-# they could be reloaded between the two gotodatas.
+setreg1;>sub.ret;sub
+gotodata;>push
+gotodata;>trash
+TTYwrite;:s;sub.ret
+TTYwrite;:u
+TTYwrite;:b
+TTYwrite;:t
+TTYwrite;:r
+TTYwrite;:a
+TTYwrite;:c
+TTYwrite;:t
+gotodata;>bpop
+setdata;>scal.a
+gotodata;>bpop
+romread2;>scal.a
+subtract
+gotodata;>bpush
+gotodata;>main
 
-null;;subr
-# ...
-# return:
-gotodata;>pop
-gotoreg1
+setreg1;>mul.ret;mul
+gotodata;>push
+gotodata;>trash
+TTYwrite;:m;mul.ret
+TTYwrite;:u
+TTYwrite;:l
+TTYwrite;:t
+TTYwrite;:i
+TTYwrite;:p
+TTYwrite;:l
+TTYwrite;:y
+gotodata;>bpop
+setdata;>scal.a
+gotodata;>bpop
+romread2;>scal.a
+multiply
+gotodata;>bpush
+gotodata;>main
 
-## to reset the stack, copy stackinit
+setreg1;>div.ret;div
+gotodata;>push
+gotodata;>trash
+TTYwrite;:d;div.ret
+TTYwrite;:i
+TTYwrite;:v
+TTYwrite;:i
+TTYwrite;:d
+TTYwrite;:e
+gotodata;>bpop
+setdata;>scal.a
+gotodata;>bpop
+romread2;>scal.a
+divide
+gotodata;>bpush
+gotodata;>main
 
 
 ############################
