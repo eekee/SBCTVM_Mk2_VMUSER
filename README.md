@@ -3,10 +3,12 @@ This is all the stuff; whatever I'm working on, have worked on,
 will work on, would like to work on, 
 or may work on on the day the existence of avian porcines is confirmed.
 
-NOTES.txt is basically all my notes-to-self.
-You may find some info on some programs by searching it for '$'.
+See [the wiki](https://github.com/eekee/SBCTVM_Mk2_VMUSER/wiki)
+for releases of actual usable code.
 
-In NOTES.txt, filenames in relative paths
-are very convenient with the Acme text editor.
-They may also be useful with other editors which support 
-opening links in the text, or when copy/paste is convenient.
+NOTES.txt is basically all my notes-to-self.
+Filenames in relative paths
+are very convenient with Acme 
+or other text editors which support opening links in the text.
+Some operating systems support text links as a system feature, 
+notably Oberon and Plan 9.

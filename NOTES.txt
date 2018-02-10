@@ -41,7 +41,7 @@ to-do marked with '>'.
 ~ stock code
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 $ trit input
-	tritin.tasm
+	$ tritin.tasm
 $ stack
 	vital! there is no stack and only single-level return. (continue.tasm)
 	$ stack1.tasm -- base with tests
@@ -86,7 +86,7 @@ palette in the color framebuffer
 	now i see how slow filling the screen is, 
 	i'm feeling less enthusiastic about mk2 graphics in general.
 calculator, tty display
-	>>> $ scal.tasm -- rpn calculator based on stack1 and tritin.
+	$ scal.tasm -- rpn calculator based on stack1 and tritin.
 calculator, graphical display
 clock, digital
 	7-seg in the mini color display
