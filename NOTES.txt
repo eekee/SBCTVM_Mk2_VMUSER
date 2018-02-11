@@ -46,12 +46,15 @@ $ stack
 	vital! there is no stack and only single-level return. (continue.tasm)
 	$ stack1.tasm -- base with tests
 	$ stack1pt.tasm -- stack1 rewritten with pt* instructions.
-		perhaps not the best idea. it doesn't really save any 
-		instructions in push or pop, and it's very useful for 
-		long runs of data elsewhere. saving it to call push or 
-		pop is more instructions than saving reg2.
+		not the best idea. it saves only 1 instruction in push or pop together. 
+		mempoint is very useful for long runs of data elsewhere, and 
+		saving it to call push or pop is more instructions than saving reg2.
 	renamed stack2 as scal, moved it to simple programs.
+dictionary
+	jumping straight to this. some string handling can be a part of it.
+	dict.tasm
 string handling
+	
 	../textdocs/SBTCVM-6-trit-Text-encoding.txt
 	input from keyboard
 	output to tty
@@ -68,6 +71,7 @@ linked list traverser
 interrupt routines
 	example structure for enabling/disabling interrupts.
 	routines to push everything on interrupt, and restore it at end.
+	from writing dict.tasm, it seems like an 'example structure' is not needed.
 inter-trom rpc and data passing
 	intertrom.txt
 7-seg display
@@ -282,7 +286,6 @@ available keys:
 	1-9 + - a-z space enter
 
 reuse or reference ../ROMS/keytest.tasm , it's got all the keys.
-i may as well write python code to generate my own keyboard interrupt table.
 
 DOC BUG:
 ../textdocs/programming-the-VM/keyboard-inter.txt
