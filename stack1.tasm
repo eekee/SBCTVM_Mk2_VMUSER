@@ -43,9 +43,15 @@ null;;bstacktop
 
 # some bstackbase values with space for
 # the 2 stacks and remaining memory:
-# +++------	728  		18955
-# ++-------	2186		17497
-# +--------	6560		13123
+# ++++-----	242		19441	1%
+# +++------	728  		18955	3%
+# ++-------	2186		17497	11%
+# +--------	6560		13123	33% lol
+# better to use a small space and flip the direction of bstack.
+
+# to reverse the direction of bstack, 
+# change 00000000+ to 00000000- in 3 places:
+# push pop and the line labelled 'bstackdumploop'.
 
 
 ############################
