@@ -1,30 +1,45 @@
 # dict -- forth-like dictionary definition and lookup
 
 #>>>>>>to do
-# paste in stack1
-# convert stack1 names to dstack, rstack
-#	bstack->dstack, stack->rstack
-#	Edit /b[s]tack
-#	Edit /[^a-z][s]tack
-# switch dstack direction
-# internal routines:
-#	lookup
-# stack routine from scal:
-#	dswap
-# keyboard...
+# routines:
+#	lookup -- find word from string, push its xt
+#	strsee -- codeword for textual defs
+#	def
 # ...
+# finally check for old stack names slipping through:
+#	Edit ,y/#.*/x/b[s]tack/=
+#	Edit ,y/#.*/y/stackreg1bak/x/[^a-z][s]tack/=
+# if any found, convert: bstack->dstack, stack->rstack
+
+
+
+
+### dictionary entry format
+# 1 codeword
+# 1 next entry
+# 1 namelen
+# n namechars
+# 1 deflen
+# n def
+#
+# 'null' next entry is +++++++++.
+#	can't use 0. mni is reasonable, but mpi is more so;
+#	an entry won't fit if it starts at mpi.
+# xt points to codeword? i guess that's right.
+
+
+
 
 # namespace usage:
-# stack: stack* dstack* rstack* dpush dpop rpush rpop
-# dict: dict* key* word* lookup alloc*
+# stack* dstack* rstack* dpush dpop rpush rpop
+# swap
+# dict* key* word* lookup* alloc*
 
 # commands:
 # (not really doing built-in words yet.)
 # def
 #	the next word is the name.
 #	following words are the definition, up to '-d-'.
-# see
-#	read a word, find it in dictionary, print its definition
 
 # internal routines:
 # word
@@ -36,8 +51,8 @@
 # 	find a word in the dictionary
 # alloc
 #	alloc memory
-# stack routine from scal:
-#	dswap
+# swap
+#	stack operation
 
 # how to arrange memory?
 # stacks at top, of course.
@@ -80,6 +95,13 @@ null;;dstacktop
 
 
 #######################
+### dict global data
+
+# head of the dictionary:
+null;;dict
+
+
+#######################
 ### stack init
 
 romread1;>rstackbase;start
@@ -108,6 +130,89 @@ setdata;>word.bufaddr
 
 
 #######################
+### dict main loop
+
+setreg1;>mainloop.ret.1;mainloop
+gotodata;>rpush
+gotodata;>word
+
+setreg1;>mainloop.ret.2;mainloop.ret.1
+gotodata;>rpush
+gotodata;>lookup
+
+## pop xt, fetch codeword, call it:
+gotodata;>dpop;mainloop.ret.2
+setdata;>mainloop.getcw
+# cheating on the return address:
+setreg1;>mainloop
+gotodata;>rpush
+romread1;000000000;mainloop.getcw
+gotoreg1
+
+
+#######################
+### stack routines
+
+## rpush
+# pushes reg1 to the return stack
+# trashes reg1, reg2
+
+setdata;>stackreg1bak;rpush
+
+romread1;>rstacktop
+setdata;>rstackpushme
+romread1;>stackreg1bak
+setdata;000000000;rstackpushme
+
+romread1;>rstacktop
+setreg2;00000000-
+add
+setdata;>rstacktop
+
+continue
+
+## rpop
+# pops top of return stack into reg1
+# trashes reg2
+
+romread1;>rstacktop;rpop
+setreg2;00000000-
+subtract
+setdata;>rstacktop
+setdata;>rstackpopme
+romread1;000000000;rstackpopme
+continue
+
+## dpush
+# pushes reg1 to b stack
+# trashes reg1, reg2
+
+setdata;>stackreg1bak;dpush
+romread1;>dstacktop
+setdata;>dstackpushme
+romread1;>stackreg1bak
+setdata;000000000;dstackpushme
+romread1;>dstacktop
+setreg2;00000000+
+add
+setdata;>dstacktop
+romread1;>stackreg1bak
+continue
+
+## dpop
+# pops top of b stack into reg1
+# trashes reg2
+
+romread1;>dstacktop;dpop
+setreg2;00000000+
+subtract
+setdata;>dstacktop
+setdata;>dstackpopme
+romread1;000000000;dstackpopme
+continue
+
+
+#######################
 ### dict routines
 
 ## alloc
@@ -116,7 +221,7 @@ setdata;>word.bufaddr
 
 romread1;>alloc.next;alloc
 gotodata;>dpush
-gotodata;>dswap
+gotodata;>swap
 gotodata;>dpop
 romread2;>alloc.next;alloc
 add
@@ -127,6 +232,76 @@ gotoreg1
 null;;alloc.next
 
 ## lookup
+# subroutine
+# ( addr len -- xt )
+# uses mempoint
+
+gotodata;>dpop;lookup
+setdata;>lookup.s.limit
+gotodata;>dpop
+setdata;>lookup.s.base
+setdata;>lookup.s.point
+romread2;>lookup.s.limit
+add
+setdata;>lookup.s.limit
+
+romread1;>dict
+
+# per-entry loop starts somewhere here
+setdata;>lookup.e.xt
+ptset
+ptinc
+ptread
+setdata;>lookup.e.next
+ptinc
+ptread
+romread2;>lookup.s.len
+gotodataif;>lookup.lenok
+gotodata;>lookup.nextentry
+
+copy1to2;lookup.lenok
+ptinc
+ptget
+setdata;>lookup.e.base
+add
+setdata;>lookup.e.limit
+
+>>>>>>>>
+time for the char loop i think.
+use offsetlen to get only the 6 trits.
+
+
+# source and entry string pointers:
+null;;lookup.s.base
+null;;lookup.s.len
+null;;lookup.s.limit
+null;;lookup.s.point
+null;;lookup.e.xt
+null;;lookup.e.base
+null;;lookup.e.limit
+null;;lookup.e.point
+null;;lookup.e.next
+
+
+## swap
+# subroutine
+# ( a b -- b a )
+# exchange the top two elements of the data stack
+# from scal
+
+gotodata;>dpop;swap
+setdata;>swap.a
+gotodata;>dpop
+setdata;>swap.b
+romread1;>swap.a
+gotodata;>dpush
+romread1;>swap.b
+gotodata;>dpush
+gotodata;>rpop
+gotoreg1
+
+null;;swap.a
+null;;swap.b
 
 
 ## word
@@ -264,7 +439,10 @@ gotodataif;>word.finalize
 gotodata;>word.spinloop
 
 clearkeyint;+++++++++;word.keyproc.beep
-buzzer;----00000
+#buzzer;----00000
+# i do not want the delay of the buzzer instruction here.
+# sfreq/splay/sstop would be no improvement, it's only 0.2ms until return.
+# make a "bgbuzz" thread or an sstop thread.
 gotodata;>word.finalize
 
 null;;word.keytmp
