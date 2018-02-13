@@ -28,7 +28,7 @@
 # xt points to codeword? i guess that's right.
 
 
-
+# tests & behaviour specification in dict.tests
 
 # namespace usage:
 # stack* dstack* rstack* dpush dpop rpush rpop
@@ -97,8 +97,8 @@ null;;dstacktop
 #######################
 ### dict global data
 
-# head of the dictionary:
 null;;dict
+null;;alloc.next
 
 
 #######################
@@ -140,80 +140,33 @@ setreg1;>mainloop.ret.2;mainloop.ret.1
 gotodata;>rpush
 gotodata;>lookup
 
-## pop xt, fetch codeword, call it:
+## pop xt
 gotodata;>dpop;mainloop.ret.2
+setreg2;>+++++++++
+gotodataif;>mainloop.badword
+
+# fetch codeword, call it
 setdata;>mainloop.getcw
-# cheating on the return address:
+# cheat with the return address:
 setreg1;>mainloop
 gotodata;>rpush
 romread1;000000000;mainloop.getcw
 gotoreg1
 
+# called routine needs word address.
+# it can fetch it from mainloop.getcw.
+# i'm not sure there's a better way to do that.
+# maybe i'll find one later.
 
-#######################
-### stack routines
-
-## rpush
-# pushes reg1 to the return stack
-# trashes reg1, reg2
-
-setdata;>stackreg1bak;rpush
-
-romread1;>rstacktop
-setdata;>rstackpushme
-romread1;>stackreg1bak
-setdata;000000000;rstackpushme
-
-romread1;>rstacktop
-setreg2;00000000-
-add
-setdata;>rstacktop
-
-continue
-
-## rpop
-# pops top of return stack into reg1
-# trashes reg2
-
-romread1;>rstacktop;rpop
-setreg2;00000000-
-subtract
-setdata;>rstacktop
-setdata;>rstackpopme
-romread1;000000000;rstackpopme
-continue
-
-## dpush
-# pushes reg1 to b stack
-# trashes reg1, reg2
-
-setdata;>stackreg1bak;dpush
-romread1;>dstacktop
-setdata;>dstackpushme
-romread1;>stackreg1bak
-setdata;000000000;dstackpushme
-romread1;>dstacktop
-setreg2;00000000+
-add
-setdata;>dstacktop
-romread1;>stackreg1bak
-continue
-
-## dpop
-# pops top of b stack into reg1
-# trashes reg2
-
-romread1;>dstacktop;dpop
-setreg2;00000000+
-subtract
-setdata;>dstacktop
-setdata;>dstackpopme
-romread1;000000000;dstackpopme
-continue
+TTYwrite;:?;mainloop.badword
+TTYwrite;:space
+gotodata;>mainloop
 
 
 #######################
 ### dict routines
+
+# if unstated, these preserve mempoint but use reg1 & reg2.
 
 ## alloc
 # subroutine
@@ -229,7 +182,6 @@ setdata;>alloc.next
 gotodata;>rpop
 gotoreg1
 
-null;;alloc.next
 
 ## lookup
 # subroutine
@@ -247,8 +199,7 @@ setdata;>lookup.s.limit
 
 romread1;>dict
 
-# per-entry loop starts somewhere here
-setdata;>lookup.e.xt
+setdata;>lookup.e.xt;lookup.entryloop
 ptset
 ptinc
 ptread
@@ -270,6 +221,16 @@ setdata;>lookup.e.limit
 time for the char loop i think.
 use offsetlen to get only the 6 trits.
 
+
+romread1;>lookup.e.next
+setreg2;+++++++++
+gotodataif;>lookup.notfound
+gotodata;>lookup.entryloop
+
+copy2to1;lookup.notfound
+gotodata;>dpush
+gotodata;>rpop
+gotoreg1
 
 # source and entry string pointers:
 null;;lookup.s.base
@@ -572,6 +533,68 @@ TTYwrite;:9;key.9
 setreg1;-----+-+0
 gotodata;>word.keyproc
 #]
+
+
+#######################
+### stack routines
+
+## rpush
+# pushes reg1 to the return stack
+# trashes reg1, reg2
+
+setdata;>stackreg1bak;rpush
+
+romread1;>rstacktop
+setdata;>rstackpushme
+romread1;>stackreg1bak
+setdata;000000000;rstackpushme
+
+romread1;>rstacktop
+setreg2;00000000-
+add
+setdata;>rstacktop
+
+continue
+
+## rpop
+# pops top of return stack into reg1
+# trashes reg2
+
+romread1;>rstacktop;rpop
+setreg2;00000000-
+subtract
+setdata;>rstacktop
+setdata;>rstackpopme
+romread1;000000000;rstackpopme
+continue
+
+## dpush
+# pushes reg1 to b stack
+# trashes reg1, reg2
+
+setdata;>stackreg1bak;dpush
+romread1;>dstacktop
+setdata;>dstackpushme
+romread1;>stackreg1bak
+setdata;000000000;dstackpushme
+romread1;>dstacktop
+setreg2;00000000+
+add
+setdata;>dstacktop
+romread1;>stackreg1bak
+continue
+
+## dpop
+# pops top of b stack into reg1
+# trashes reg2
+
+romread1;>dstacktop;dpop
+setreg2;00000000+
+subtract
+setdata;>dstacktop
+setdata;>dstackpopme
+romread1;000000000;dstackpopme
+continue
 
 
 #######################

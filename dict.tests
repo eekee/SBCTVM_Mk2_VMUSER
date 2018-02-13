@@ -1,0 +1,53 @@
+test procedures for dict, which is complex enough that 
+i don't want to rely on my memory and imagination while testing.
+
+a	action
+r	response
+h	hidden response
+
+responses in [[]] require alteration to the word routine.
+
+
+a	start up
+r	a light grey box appears in the mono plotter
+
+a	type alpha, num, -, +
+r	characters appear in the tty
+
+a	type space or newline
+r	the light grey box may visibly blink or, depending what you typed, change
+r	in the case of newline, the tty should scroll 1 line
+
+typing actions below implicitly end with "followed by space or newline".
+
+== interpreting state (outside 'def' states) ==
+
+a	type a word you previously defined
+r	the word's definition is printed to the tty
+
+a	type an undefined word
+r	'?' is printed to the tty
+
+a	type 'def'
+h	enter 'def name' state
+[[r	mono plotter may blink, then should show N for def name state]]
+
+== def name state ==
+
+a	type '-d-'
+r	'name?' is printed to the tty
+
+a	type any other word (even 'def')
+h	enter 'def definition' state
+[[r	mono plotter may blink, then should show D for def definition state]]
+
+== def definition state ==
+
+a	type '-d-'
+h	definition is interned in the dictionary
+h	enter 'interpreting' state
+r	mono plotter may blink, then should show a light grey box
+
+a	type any other word
+h	word with its trailing space or newline is entered into the current definition
+[[r	mono plotter may blink, then should redisplay D for def definition state]]
