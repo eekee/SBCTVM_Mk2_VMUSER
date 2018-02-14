@@ -3,7 +3,6 @@
 #>>>>>>to do
 # routines:
 #	strsee -- codeword for textual defs
-#>	lookup -- find word from string, push its xt
 #	def
 # move monoprompt out of word -- it needs to show state for now.
 # ...

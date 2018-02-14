@@ -59,8 +59,9 @@ $ stack
 dictionary
 	jumping straight to this. some string handling can be a part of it.
 	dict.tasm
+	it's heavy going. should have written string comparison separately.
+	it's also huge, should test parts separately.
 string handling
-	
 	../textdocs/SBTCVM-6-trit-Text-encoding.txt
 	input from keyboard
 	output to tty
@@ -77,9 +78,12 @@ linked list traverser
 interrupt routines
 	example structure for enabling/disabling interrupts.
 	routines to push everything on interrupt, and restore it at end.
-	from writing dict.tasm, it seems like an 'example structure' is not needed.
+	maybe not needed. in writing dict, i turned the problem on its head,
+	enabling interrupts only when they're wanted. 
+	for sbtcvm, this makes sense.
 inter-trom rpc and data passing
 	intertrom.txt
+	need to retry since changes, i think.
 7-seg display
 	for easy score display in games
 draw string in graphics mode(s)
