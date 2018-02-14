@@ -2,9 +2,10 @@
 
 #>>>>>>to do
 # routines:
-#	lookup -- find word from string, push its xt
 #	strsee -- codeword for textual defs
+#>	lookup -- find word from string, push its xt
 #	def
+# move monoprompt out of word -- it needs to show state for now.
 # ...
 # finally check for old stack names slipping through:
 #	Edit ,y/#.*/x/b[s]tack/=
@@ -189,13 +190,9 @@ gotoreg1
 # uses mempoint
 
 gotodata;>dpop;lookup
-setdata;>lookup.s.limit
+setdata;>lookup.charcount
 gotodata;>dpop
 setdata;>lookup.s.base
-setdata;>lookup.s.point
-romread2;>lookup.s.limit
-add
-setdata;>lookup.s.limit
 
 romread1;>dict
 
@@ -206,23 +203,48 @@ ptread
 setdata;>lookup.e.next
 ptinc
 ptread
-romread2;>lookup.s.len
-gotodataif;>lookup.lenok
+romread2;>lookup.charcount
+gotodataif;>lookup.lenmatch
 gotodata;>lookup.nextentry
 
-copy1to2;lookup.lenok
-ptinc
+ptinc;lookup.lenmatch
 ptget
 setdata;>lookup.e.base
+setreg1;000000000
+setdata;>lookup.i
+
+romread1;>lookup.e.base;lookup.charloop
+romread2;>lookup.i
 add
-setdata;>lookup.e.limit
+ptset
+# i'd like to use offsetlen to get only the 6 trits,
+# but i don't want to add 4 more instructions for every character.
+# i suppose masking the register after load would be better this time,
+# only 2 instructions.
+ptread
+setdata;>lookup.char
+romread2;>lookup.s.base
+add
+ptset
+ptread
+romread2;>lookup.char
+gotodataif;>lookup.charloop.next
+gotodata;>lookup.nextentry
 
->>>>>>>>
-time for the char loop i think.
-use offsetlen to get only the 6 trits.
+romread1;>lookup.i;lookup.charloop.next
+setreg2;00000000+
+add
+setdata;>lookup.i
+romread2;>lookup.charloop
+gotodataif;>lookup.gotmatch
+gotodata;>lookup.charloop
 
+romread1;>lookup.e.xt;lookup.gotmatch
+gotodata;>dpush
+gotodata;>rpop
+gotoreg1
 
-romread1;>lookup.e.next
+romread1;>lookup.e.next;lookup.nextentry
 setreg2;+++++++++
 gotodataif;>lookup.notfound
 gotodata;>lookup.entryloop
@@ -232,15 +254,12 @@ gotodata;>dpush
 gotodata;>rpop
 gotoreg1
 
-# source and entry string pointers:
 null;;lookup.s.base
-null;;lookup.s.len
-null;;lookup.s.limit
-null;;lookup.s.point
+null;;lookup.charcount
+null;;lookup.i
+null;;lookup.char
 null;;lookup.e.xt
 null;;lookup.e.base
-null;;lookup.e.limit
-null;;lookup.e.point
 null;;lookup.e.next
 
 

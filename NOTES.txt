@@ -32,6 +32,12 @@ what's this?
 multi-trom: the .streg files in ../VMSYSTEM/ROMS/
 need to better test communicating via scratch memory.
 
+git handling of ..:
+i want my repo to follow the main one.
+i want to branch only when i have a major feature to add.
+	then i *maybe* want the branch to correspond to a new fork on github.
+
+
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 @ PROGRAMS
 
