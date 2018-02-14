@@ -1,0 +1,8 @@
+# just testing the assembler
+
+null;;valid
+romread2;>valid
+romread2;hello
+frobnozz;>valid
+frobnozz;what
+gotodata;>otheruniverse
