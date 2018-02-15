@@ -140,7 +140,7 @@ setreg1;>mainloop.ret.2;mainloop.ret.1
 gotodata;>rpush
 gotodata;>lookup
 
-## pop xt
+## pop and test xt
 gotodata;>dpop;mainloop.ret.2
 setreg2;>+++++++++
 gotodataif;>mainloop.badword
@@ -168,21 +168,38 @@ gotodata;>mainloop
 
 # if unstated, these preserve mempoint but use reg1 & reg2.
 
+###########
 ## alloc
 # subroutine
 # ( size -- address )
 
+#romread1;>alloc.next;alloc
+#gotodata;>dpush
+#gotodata;>swap
+#gotodata;>dpop
+#romread2;>alloc.next
+#add
+#setdata;>alloc.next
+#gotodata;>rpop
+#gotoreg1
+
+# alternative alloc doesnt call swap.
+# uses a location for temporary storage, 
+# which swap did anyway.
 romread1;>alloc.next;alloc
-gotodata;>dpush
-gotodata;>swap
+setdata;>alloc.tmp
 gotodata;>dpop
-romread2;>alloc.next;alloc
+romread2;>alloc.next
 add
 setdata;>alloc.next
+romread1;>alloc.tmp
+gotodata;>dpush
 gotodata;>rpop
 gotoreg1
+null;;alloc.tmp
 
 
+###########
 ## lookup
 # subroutine
 # ( addr len -- xt )
@@ -198,15 +215,18 @@ romread1;>dict
 setdata;>lookup.e.xt;lookup.entryloop
 ptset
 ptinc
+# "next"
 ptread
 setdata;>lookup.e.next
 ptinc
+# "namelen"
 ptread
 romread2;>lookup.charcount
 gotodataif;>lookup.lenmatch
 gotodata;>lookup.nextentry
 
 ptinc;lookup.lenmatch
+# "namechars"; want the address this time.
 ptget
 setdata;>lookup.e.base
 setreg1;000000000
@@ -222,19 +242,23 @@ ptset
 # only 2 instructions.
 ptread
 setdata;>lookup.char
-romread2;>lookup.s.base
+
+romread1;>lookup.s.base
+romread2;>lookup.i
 add
 ptset
 ptread
-romread2;>lookup.char
+setreg2;000000000;lookup.char
 gotodataif;>lookup.charloop.next
 gotodata;>lookup.nextentry
 
+# char matched, try the next one.
+# if there's no next one, we got a match!
 romread1;>lookup.i;lookup.charloop.next
 setreg2;00000000+
 add
 setdata;>lookup.i
-romread2;>lookup.charloop
+romread2;>lookup.charcount
 gotodataif;>lookup.gotmatch
 gotodata;>lookup.charloop
 
@@ -243,9 +267,16 @@ gotodata;>dpush
 gotodata;>rpop
 gotoreg1
 
+# length or some char didn't match, so
+# fetch & check the next entry pointer.
+# if null, return failure.
 romread1;>lookup.e.next;lookup.nextentry
 setreg2;+++++++++
 gotodataif;>lookup.notfound
+
+# valid pointer, so fetch the next xt & put it in reg1
+ptset
+ptread
 gotodata;>lookup.entryloop
 
 copy2to1;lookup.notfound
@@ -256,33 +287,38 @@ gotoreg1
 null;;lookup.s.base
 null;;lookup.charcount
 null;;lookup.i
-null;;lookup.char
 null;;lookup.e.xt
 null;;lookup.e.base
 null;;lookup.e.next
 
 
+###########
 ## swap
 # subroutine
 # ( a b -- b a )
 # exchange the top two elements of the data stack
 # from scal
 
-gotodata;>dpop;swap
-setdata;>swap.a
-gotodata;>dpop
-setdata;>swap.b
-romread1;>swap.a
-gotodata;>dpush
-romread1;>swap.b
-gotodata;>dpush
-gotodata;>rpop
-gotoreg1
+# 44 instructions counting the push and pop routines.
+# could write a much more efficient one by using mempoint,
+# but this is not used since i changed alloc.
 
-null;;swap.a
-null;;swap.b
+#gotodata;>dpop;swap
+#setdata;>swap.a
+#gotodata;>dpop
+#setdata;>swap.b
+#romread1;>swap.a
+#gotodata;>dpush
+#romread1;>swap.b
+#gotodata;>dpush
+#gotodata;>rpop
+#gotoreg1
+#
+#null;;swap.a
+#null;;swap.b
 
 
+###########
 ## word
 # subroutine
 # ( -- address length )

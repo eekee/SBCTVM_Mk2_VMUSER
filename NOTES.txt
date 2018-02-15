@@ -58,13 +58,15 @@ $ stack
 	renamed stack2 as scal, moved it to simple programs.
 dictionary
 	jumping straight to this. some string handling can be a part of it.
-	dict.tasm
+	$ dict.tasm
+	$ dict.tests
 	it's heavy going. should have written string comparison separately.
-	it's also huge, should test parts separately.
+>>>	it's also huge, should test parts separately.
 string handling
 	../textdocs/SBTCVM-6-trit-Text-encoding.txt
-	input from keyboard
-	output to tty
+	input from keyboard -- in dict
+	output to tty -- will be in dict
+	string comparison -- in dict
 	integer<->balanced ternary string conversion
 	integer<->decimal string conversion
 	store text in command words
@@ -75,6 +77,7 @@ string handling
 		2 in the command words.
 directional movement key routines
 linked list traverser
+	in dict
 interrupt routines
 	example structure for enabling/disabling interrupts.
 	routines to push everything on interrupt, and restore it at end.
