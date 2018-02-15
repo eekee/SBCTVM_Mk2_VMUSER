@@ -2,8 +2,9 @@
 
 #>>>>>>to do
 # routines:
-#	strsee -- codeword for textual defs
 #	def
+#		(must trim off trailing char)
+# check if lookup ignores trailing char. it should.
 # move monoprompt out of word -- it needs to show state for now.
 # ...
 # finally check for old stack names slipping through:
@@ -128,6 +129,42 @@ gotodata;>alloc
 gotodata;>dpop
 setdata;>word.bufaddr
 
+## intern def
+# alloc 7 words for an entry with an empty definition
+setreg1;000000+-+
+gotodata;>dpush
+gotodata;>alloc
+gotodata;>dpop
+# it's the head of the dictionary now
+setdata;>dict
+ptset
+# set the codeword
+setreg1;>def
+ptwri
+# set the 'next' field to null
+ptinc
+setreg1;+++++++++
+ptwri
+# name length
+ptinc
+setreg1;0000000+0
+ptwri
+# set the name
+# not sure if the chars will work like this
+ptinc
+setreg1;:d
+ptwri
+ptinc
+setreg1;:e
+ptwri
+ptinc
+setreg1;:f
+ptwri
+# set the definition length
+ptinc
+setreg1;000000000
+ptwri
+
 
 #######################
 ### dict main loop
@@ -197,6 +234,50 @@ gotodata;>dpush
 gotodata;>rpop
 gotoreg1
 null;;alloc.tmp
+
+
+###########
+## strsee -- codeword for textual defs
+# subroutine
+# ( - )
+# uses mempoint
+# gets current word address from mainloop.getcw
+
+romread1;>mainloop.getcw;strsee
+ptset
+ptinc
+ptinc
+ptread
+copy1to2
+# namelen in 2
+ptinc
+ptget
+# addr of namechars in 1
+add
+# addr of deflen in 1
+ptset
+ptread
+copy1to2
+# deflen in 2
+ptinc
+ptget
+# addr of def in 1
+add
+copy1to2
+# end of def in 2
+
+ptread;;strsee.loop
+# cheap. ought to setreg1;--------- and use offsetlen
+setdata;>strsee.write
+TTYwrite;;strsee.write
+
+ptinc
+ptget
+gotodataif;>strsee.done
+gotodata;>strsee.loop
+
+gotodata;>rpop;strsee.done
+gotoreg1
 
 
 ###########
