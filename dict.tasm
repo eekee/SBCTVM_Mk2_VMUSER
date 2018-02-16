@@ -11,7 +11,8 @@
 #	Edit ,y/#.*/x/b[s]tack/=
 #	Edit ,y/#.*/y/stackreg1bak/x/[^a-z][s]tack/=
 # if any found, convert: bstack->dstack, stack->rstack
-
+# speaking of old names, i hope i've fully recovered from 
+#	accidentally global replace: ,x/def(\.name)?/c/memcopy/
 
 
 
@@ -281,6 +282,169 @@ gotoreg1
 
 
 ###########
+## memcopy
+# subroutine
+# ( source dest length -- )
+# uses mempoint
+
+# copies data from one memory region to another.
+# overlap is safe only if dest <= source.
+
+setreg1;000000000;memcopy
+setdata;>memcopy.count
+gotodata;>dpop
+setdata;>memcopy.length
+gotodata;>dpop
+setdata;>memcopy.dest
+gotodata;>dpop
+setdata;>memcopy.source
+
+romread1;>memcopy.source;memcopy.loop
+romread2;>memcopy.count
+add
+ptset
+ptread
+setdata;>memcopy.char
+romread1;>memcopy.dest
+romread2;>memcopy.count
+add
+ptset
+romread1;>memcopy.char
+ptwri
+romread1;>memcopy.count
+setreg2;00000000+
+add
+romread2;>memcopy.length
+gotodataif;>memcopy.done
+setdata;>memcopy.count
+gotodata;>memcopy.loop
+
+gotodata;>rpop;memcopy.done
+gotoreg1
+
+null;;memcopy.source
+null;;memcopy.dest
+null;;memcopy.length
+null;;memcopy.count
+null;;memcopy.data
+
+
+###########
+## def -- define words interactively
+# subroutine
+# ( - )
+# uses mempoint
+# uses alloc.next, writing to memory before using alloc 
+#	to claim the space. not terribly good practice, i know.
+
+# stages:
+# 1: read word for name
+# 2: read any number of words for definition
+
+###
+# begin building new entry
+romread1;>alloc.next;def
+setdata;>def.e.base
+ptset
+setreg1;>strsee
+ptwri
+ptinc
+romread1;>dict
+ptwri
+
+###
+# get name, inter that
+ptinc
+ptget
+setdata;>def.e.here
+# here now points to namelen
+
+# FIXME set monoprompt
+setreg1;>def.ret.name
+gotodata;>rpush
+gotodata;>word
+# fetch length, but don't write it to entry yet because
+# we're going to check if it needs pruning.
+gotodata;>dpop;def.ret.name
+setdata;>def.len
+gotodata;>dpop
+setdata;>def.s.base
+
+# prune last char from name
+# check if last char is space or newline.
+# if yes, prune, if no, beep and don't prune.
+romread2;>def.len
+add
+ptset
+ptdec
+ptread
+setreg2;:space
+gotodataif;>def.prune
+setreg2;:enter
+gotodataif;>def.prune
+
+buzzer;---0-----
+romread1;>def.len
+gotodata;>def.setnamelen
+
+romread1;>def.len;def.prune
+setreg2;00000000-
+add
+setdata;>def.len
+
+romread1;>def.e.here;def.setnamelen
+ptset
+romread1;>def.len
+ptwri
+
+# copy name in
+ptinc
+ptget
+setdata;>def.e.here
+# here now points to start of name
+
+romread1;>def.s.base
+gotodata;>dpush
+romread1;>def.e.here
+dotodata;>dpush
+romread1;>def.len
+gotodata;>dpush
+setreg1;>def.name.copied
+gotodata;>rpush
+gotodata;>memcopy
+
+# oh oh oh oh! found a major bug when making copy code its 
+# own subroutine: the name would have overwritten the header.
+# big argument for not making monolithic routines.
+
+###
+# get words, inter them
+# loop getting words, copying them in, checking for -d- to end.
+# keep a running count of the length.
+
+romread1;>def.e.here;def.name.copied
+romread2;>def.len
+add
+setdata;>def.e.here
+# here now points to deflen
+
+>>>>>>>>>>
+
+# set head of dictionary to new definition, and return
+romread1;>def.e.base
+setdata;>dict
+gotodata;>rpop
+gotoreg1
+
+# def.e is the new entry
+null;;def.e.base
+null;;def.e.here
+# def.s is source string
+null;;def.s.base
+# some apply to both
+null;;def.len
+
+###########
 ## lookup
 # subroutine
 # ( addr len -- xt )
@@ -403,6 +567,8 @@ null;;lookup.e.next
 ## word
 # subroutine
 # ( -- address length )
+# uses mempoint
+
 # input a word from the keyboard.
 # return a string, including the terminating space or enter.
 # sets up interrupts and clears them again; lots of lines!

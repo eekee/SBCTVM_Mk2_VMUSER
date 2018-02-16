@@ -67,6 +67,9 @@ string handling
 	input from keyboard -- in dict
 	output to tty -- will be in dict
 	string comparison -- in dict
+	string copy -- have memcopy in dict
+	string sanitization -- set the upper trits the same as the :char construct
+		an in-place routine would be much smaller than a sanitizing 'strcopy'.
 	integer<->balanced ternary string conversion
 	integer<->decimal string conversion
 	store text in command words
