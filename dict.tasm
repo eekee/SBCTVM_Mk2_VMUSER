@@ -7,12 +7,13 @@
 # check if lookup ignores trailing char. it should.
 # move monoprompt out of word -- it needs to show state for now.
 # ...
-# finally check for old stack names slipping through:
+# check for old stack names slipping through:
 #	Edit ,y/#.*/x/b[s]tack/=
 #	Edit ,y/#.*/y/stackreg1bak/x/[^a-z][s]tack/=
 # if any found, convert: bstack->dstack, stack->rstack
 # speaking of old names, i hope i've fully recovered from 
 #	accidentally global replace: ,x/def(\.name)?/c/memcopy/
+# update namespace comment
 
 
 
@@ -34,7 +35,6 @@
 
 # namespace usage:
 # stack* dstack* rstack* dpush dpop rpush rpop
-# swap
 # dict* key* word* lookup* alloc*
 
 # commands:
@@ -572,7 +572,7 @@ null;;lookup.e.next
 # input a word from the keyboard.
 # return a string, including the terminating space or enter.
 # sets up interrupts and clears them again; lots of lines!
-# this is basically a blocking read (from the keyboard). 
+# this is basically a blocking read from the keyboard. 
 
 monofill;-------00;word
 setreg1;000000000
@@ -680,17 +680,21 @@ null;;word.bufaddr
 null;;word.buflen
 
 
-# key routines for word:
+## key routines for word
+# keyproc is common to all of them
 
 setdata;>word.keytmp;word.keyproc
 romread1;>word.bufaddr
-romread2;>word.buflen
+romread2;>word.count
 add
 ptset
 romread1;>word.keytmp
 ptwri
 setreg1;00000000+
 add
+# now reg1 contains count+1
+setdata;>word.count
+
 romread2;>word.buflen
 gotodataif;>word.keyproc.beep
 romread1;>word.keytmp
