@@ -62,6 +62,7 @@ dictionary
 	$ dict.tests
 	it's heavy going. should have written string comparison separately.
 >>>	it's also huge, should test parts separately.
+	shelved for the moment.
 string handling
 	../textdocs/SBTCVM-6-trit-Text-encoding.txt
 	input from keyboard -- in dict

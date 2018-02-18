@@ -5,7 +5,6 @@
 #	def
 #		(must trim off trailing char)
 # check if lookup ignores trailing char. it should.
-# move monoprompt out of word -- it needs to show state for now.
 # ...
 # check for old stack names slipping through:
 #	Edit ,y/#.*/x/b[s]tack/=
@@ -359,7 +358,6 @@ ptget
 setdata;>def.e.here
 # here now points to namelen
 
-# FIXME set monoprompt
 setreg1;>def.ret.name
 gotodata;>rpush
 gotodata;>word
