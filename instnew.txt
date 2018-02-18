@@ -1,0 +1,130 @@
+attempt at an all-new instruction set
+using 1/3 of the instruction space
+so it can coexist with the existing instructions.
+
+top trit: +
+generally go high to leave space for expansion downward,
+but i don't think i'll be leaving space.
+
+
+problem to maybe post:
+[i'm rediscovering a problem i found last time i tried to design CPUs: the smaller the instruction word, the the more effort and experience are required to produce a good result. i'm trying to work in 5 trits so as not to overlap the existing instructions. i want more registers, so i would like a more unified scheme of addressing them. that would take 4 trits alone. 
+]
+
+@@@@@@@@@@@@@@@@@@@@@@@@@
+@ addressing by trit-group
+
+one or more trits in the opcode specify source, 
+another identical group specify destination.
+no surplus codes, anything that's not a particular 
+mode specifies a register.
+
+~ most important modes
+~~~~~~~~~~~~~~~~~~~~
+* data value (read-only)
+* data gives address
+* a register gives the address
+* a register
+
+~ other considerations
+~~~~~~~~~~~~~~~~~~~~
+* instruction space needs to be addressed in some way
+* io space ditto (late consideration)
+* indirect would be nice for return
+* indexed would be nice: add data to another register to get address
+
+perhaps 'data value' can be symetrical.
+as destination (write), nothing gets written but flags are set, 
+as in compare instructions.
+
+the trouble with this is it would take at least 2 trits to specify 
+the minimum necessary modes. with 2 trits each for source 
+and destination, that only leaves 1 trit for opcode! that's 
+impossible. (it starts to look reasonable with 7-trit instructions.)
+
+i had this 'metamode' idea, but it didn't save any trits at all.
+
+i'll have to restrict which operations can use which modes. 
+an accumulator architecture will probably help.
+
+~ episode 4: a new hope
+~~~~~~~~~~~~~~~~~~~~
+i wonder though, with such a powerful set of addressing modes, 
+would it be good enough using all 6 trits, having 9 instructions?
+maybe i can arrange it so that the old instructions 
+correspond to writing to immediate.
+
+the highest-numbered instruction is -00--0.
+that's like, 2 destinations. could be worse.
+
+instruction trit pattern:
+	ddssoo
+where:
+dd = destination
+ss = source
+oo = operation
+
+in dd, -- can be immediate data, -0 the flags register which must 
+be read-only because of this. a flags register does rather suppose 
+some operations for working with trits, and i'm not really all that 
+keen on it anyway.
+
+maybe if the last trit is 0, the instruction trit pattern becomes:
+	ddooo0
+no-operand instructions are then:
+	oooo00
+it's 0 so null fits in my scheme.
+
+now, i see not all instructions are documented in the file i use, 
+so i'd better tally up all the extras before starting my list.
+
+
+@@@@@@@@@@@@@@@@@@@@@@@@@
+@ existing instructions
+
+in ../textdocs/
+f=instructionlist.txt
+ff=programming-the-VM/SBTCVM-asm.txt
+sed -n 's/\|.*//p' $f | sed 's/\+/\\+/g; s/(.*)/echo \1; grep -n -- ''\"\1\"'' $ff \/dev\/null/' | sh
+bork bork bork, switching to awk!
+awk -f '/\|/ {
+actually awk would be almost as bad. 
+	missinst.py
+
+~ Instructions not found, grouped and annotated
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+oh these would be useful!
+	-0----|set copyrange start addr [reserved for implimentation]
+	-0---0|set copyrange end addr [reserved for implimentation]
+	-0---+|set copyrange dest addr [reserved for implimentation]
+	-0--0-|Exec > IO copy [reserved for implimentation]
+	-0--00|Exec > Exec copy [reserved for implimentation]
+	-0--0+|IO > Exec copy [reserved for implimentation]
+	-0--+-|IO > IO [reserved for implimentation]
+
+no concern
+	-0-+-0|reserved - mempoint
+	-0-+-+|reserved - mempoint
+	--0000|legacy null
+
+simple mistake?
+	--++00|
+
+need documenting
+	--+00-|threadref ???????TT where TT is the thread IS
+	--+000|start thread refrenced in threadref, at address AAAAAAAAA
+	--+00+|thread STOP: stop current thread
+	--+0+-|thread kill: kill thread refrenced in threadref.
+
+simply not found due to syntax difference.
+	-0-0+-|memory point control - operation depends on data OO???????
+
+so, the interesting ones are the copy group.
+they would certainly help with graphics.
+i may implement them. i'll certainly keep them in mind.
+should also add mem range to single io and single io to mem range.
+maybe take over the two exec/io for that, and drop io/io.
+or keep it the way it is, because reading/writing a single io loc 
+is already fairly easy with mempoint.
+count might be easier than end addr.
