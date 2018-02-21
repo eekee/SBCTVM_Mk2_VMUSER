@@ -714,16 +714,23 @@ null;;word.keytmp
 ## key interrupt routines:
 
 TTYwrite;:space;key.space
-setreg1;----0-00+
+setreg1;000-0-00+
 gotodata;>word.keyproc
 TTYwrite;:enter;key.enter
-setreg1;----0-000
+setreg1;000-0-000
+gotodata;>word.keyproc
+TTYwrite;:space;key.pos
+setreg1;000--++-+
+gotodata;>word.keyproc
+TTYwrite;:enter;key.neg
+setreg1;000--++0+
 gotodata;>word.keyproc
 
 ## autogenerate most key interrupt routines:
-# the type of operation doesn't really accommodate sed -n with /regexp/p, 
-# it's shorter and easier to use grep.
-# i could make it cover enter and space too, but it doesn't seem worth it.
+# the type of operation doesn't really accommodate sed -n
+# with /regexp/p, it's shorter and easier to use grep.
+# i could make it cover enter space + and - too,
+# but it's not worth the extra code.
 
 #	<grep '......[a-z0-9]$' ../textdocs/SBTCVM-6-trit-Text-encoding.txt | sed 's/(.+)(.)/TTYwrite;:\2;key.\2\nsetreg1;000\1\ngotodata;>word.keyproc/'
 #[
