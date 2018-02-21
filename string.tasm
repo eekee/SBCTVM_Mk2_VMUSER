@@ -2,14 +2,17 @@
 
 #>>>> to do:
 # import from dict:
-#	stack code
 #	string to tty from strsee
 #	string comparison (lookup.charloop)
 #	alloc -- will want it for copy, and may as well test it here
 #	mem copy from def
-#	maybe word
+#	word (last)
+#		test with small buffer size to check buffer stop without pain.
+#		note: 30 chars is enough for antidisestablishmentarianism, 
+#		but not supercallifragilisticexpialidocious.
 # make new:
 #	string sanitization
+#	word wrap (fixed width)
 
 # how to write strings in the source for tests?
 # use textstart/textstop, put label on previous instruction, 
@@ -18,15 +21,165 @@
 
 gotodata;>start
 
+######################
+### string data
+
 null;;string1
 textstart
 test string 1
 textstop
+# 14 chars
 
-# example init of string1:
+null;;string2
+textstart
+Helpview. v2.0.3's fast and easy help system just got a bit more helpful with a new search feature & glossary.
+textstop
+# 111 chars
+
+null;;string3
+textstart
+But what about the glossary?  well, you can read through it like a
+normal page, but you will probably find the integrated glossary
+results included in the search feature to be much more helpful.
+textstop
+# 195 chars
+# line lengths 66, 63, 63
+
+null;;string4
+textstart
+Now when you open tasm files in fileview2 and fileman in run mode, GUIasm will open up and easily allow for repeat assembling with a mouse click, automatically opening a log of assembler output upon errors. It can also be run from codeview as well.
+textstop
+# 249 chars
+
+
+#######################
+### stack data
+
+null;+++++++++;rstackbase
+null;;rstacktop
+null;;stackreg1bak
+null;++++-----;dstackbase
+null;;dstacktop
+
+# some dstackbase values with space for
+# the 2 stacks and remaining memory:
+# ++++-----	242		19441	1%
+# +++------	728  		18955	3%
+# ++-------	2186		17497	11%
+# +--------	6560		13123	33% lol
+
+
+######################
+### end of data
+
+null;;start
+
+
+#######################
+### stack init
+
+romread1;>rstackbase;start
+setdata;>rstacktop
+# if not using bstack omit remainder
+romread1;>dstackbase
+setdata;>dstacktop
+# underflow marker for data stack:
+setreg1;-+-+-+-+-
+gotodata;>dpush
+
+
+######################
+### string init
+
+### init source strings
 setreg1;>string1
 ptset
 setreg2;00000000+
 add
 ptwri
-# now data labelled string1 holds start address of string
+# now data labelled string1 holds start address of string 1.
+# reg2 unchanged, so we don't set it for the rest.
+setreg1;>string2
+ptset
+add
+ptwri
+setreg1;>string3
+ptset
+add
+ptwri
+setreg1;>string4
+ptset
+add
+ptwri
+
+
+
+
+
+
+#######################
+### stack routines
+
+## rpush
+# pushes reg1 to the return stack
+# trashes reg1, reg2
+
+setdata;>stackreg1bak;rpush
+
+romread1;>rstacktop
+setdata;>rstackpushme
+romread1;>stackreg1bak
+setdata;000000000;rstackpushme
+
+romread1;>rstacktop
+setreg2;00000000-
+add
+setdata;>rstacktop
+
+continue
+
+## rpop
+# pops top of return stack into reg1
+# trashes reg2
+
+romread1;>rstacktop;rpop
+setreg2;00000000-
+subtract
+setdata;>rstacktop
+setdata;>rstackpopme
+romread1;000000000;rstackpopme
+continue
+
+## dpush
+# pushes reg1 to b stack
+# trashes reg1, reg2
+
+setdata;>stackreg1bak;dpush
+romread1;>dstacktop
+setdata;>dstackpushme
+romread1;>stackreg1bak
+setdata;000000000;dstackpushme
+romread1;>dstacktop
+setreg2;00000000+
+add
+setdata;>dstacktop
+romread1;>stackreg1bak
+continue
+
+## dpop
+# pops top of b stack into reg1
+# trashes reg2
+
+romread1;>dstacktop;dpop
+setreg2;00000000+
+subtract
+setdata;>dstacktop
+setdata;>dstackpopme
+romread1;000000000;dstackpopme
+continue
+
+
+#######################
+### end of code
+
+stop;;alloc.base
