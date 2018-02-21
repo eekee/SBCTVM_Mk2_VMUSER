@@ -1,0 +1,32 @@
+# string -- routines for character strings
+
+#>>>> to do:
+# import from dict:
+#	stack code
+#	string to tty from strsee
+#	string comparison (lookup.charloop)
+#	alloc -- will want it for copy, and may as well test it here
+#	mem copy from def
+#	maybe word
+# make new:
+#	string sanitization
+
+# how to write strings in the source for tests?
+# use textstart/textstop, put label on previous instruction, 
+# increment address before passing it to the routine.
+# may as well use previous instruction to store actual address.
+
+gotodata;>start
+
+null;;string1
+textstart
+test string 1
+textstop
+
+# example init of string1:
+setreg1;>string1
+ptset
+setreg2;00000000+
+add
+ptwri
+# now data labelled string1 holds start address of string
