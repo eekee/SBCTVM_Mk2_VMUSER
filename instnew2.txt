@@ -1,0 +1,153 @@
+notes for new 9-trit instruction set
+
+discussion:
+
+
+don't forget:
+* stack (can't forget this :)
+* integer division considerations, modulo, divmod
+* muldiv, long-result multiply, maybe mixed-length division
+
+~ most important modes
+~~~~~~~~~~~~~~~~~~~~
+* data value (read-only)
+* address in data
+* address in register
+* the registers, of course
+
+~ other considerations
+~~~~~~~~~~~~~~~~~~~~
+* instruction and io spaces needs to be addressed in some way
+* indirect would be nice
+	* by register and/or by data?
+* indexed would be nice: address is data + register
+
+
+@@@@@@@@@@@@@@@@@@@@@@@@@
+@ symmetric addressing foray 1
+
+still 2 trits for mode spec, 
+3 would leave too few trits for opcode.
+
+if i try to do this straight, i'm going to end up with 
+a lot of invalid combinations.
+there is already not enough space for registers, i think.
+what about...
+of the 2 pairs of trits, one must address a register while 
+indicating something about the other?
+indicate what? which group of modes it's in.
+*sigh* i don't like this.
+
+
+@@@@@@@@@@@@@@@@@@@@@@@@@
+
+Edit +3,>cat>/dev/snarf
+write introduction below.
+
+...
+
+
+@@@@@@@@@@@@@@@@@@@@@@@@@
+@ asymmetric addressing foray 1
+
+one trit choses from:
+-	mem->reg
+0	reg->reg
++	reg->mem
+the numbering was obvious :)
+
+this allows 9 registers!
+also 9 non-register addressing modes. 
+excellent!
+it leaves 4 trits for opcode, 
+for maximum 80 2-operand instructions and 
+243 single- or no-operand instructions.
+
+i can only see one invalid combination now:
+writing to immediate data.
+
+calling the one trit the 'metamode selector'
+
+~ instruction layout
+~~~~~~~~~~~~~~~~~~~~~~
+
+general idea:
+oooomssdd
+--oooomqq
+----ooooo
+
+o = opcode
+m = metamode
+s = source
+d = destination
+q = source or destination, depending on opcode
+- = literal negative trit
+
+the relative numbers of opcode and literal trits may change.
+
+~~~~~~~~~~~~~~~~~~~~~~
+
+indexed still gets tricky: 
+how do you specify which register?
+suppose only 3 registers can index.
+that turns indexing into 3 modes, 
+leaving 6 other non-register addressing modes.
+worth trying.
+
+not sure if i want the pc to be an index register.
+in fact, let's say it's not. pc-relative addressing 
+is difficult to use manually and only seems useful 
+for multitasking some languages. even there, the 
+only use is to save an index register. i'd rather 
+not force one of the limited number of index 
+registers to be the pc.
+
+what about conditionals?
+either:
+1	condition test skips next instruction
+2	special set of opcodes embodying the condition test 
+
+#1 is kinda cheapskates.
+#2 will take up some space, but remember jumps only take 1 operand.
+
+i would like to do it with flags, it's more realistic.
+a nice aspect of balanced ternary is that the sign flag also covers zero.
+i don't think many flags are needed, just sign and carry.
+there's no fussing about with the difference between carry and overflow, 
+and the 3 states of each flag cover everything else, i think.
+
+--ooSCmqq
+the capitals are flag trits. to make the jump, 
+they should match the cpu's flags.
+
+i think flags should be set after any arithmetic or logic operation, 
+but perhaps it will be faster if they're not.
+a point to discuss.
+
+i don't want to do as intel did, giving all the conditional jumps different 
+names depending on what they're meant to test, i find that rather 
+confusing. i prefer to refer to actual flag values. perhaps the instruction 
+name could include symbols like so:
+	jump+-
+of course, it's possible to assign both sets of names.
+
+oh, long or short instruction names?
+short might be better for a native assembler, 
+but long are much nicer to handle in the planning stage.
+long for now, maybe shorten them later, perhaps only for native.
+
+hmm what if you only want to test one flag?
+four (groups of) jump instructions.
+representing the flag state as '0':
+	jump
+		unconditional
+	jumpc0
+		test carry flag only
+	jumps0
+		test sign flag only
+	jump00
+		test both flags
+
+if there's room in the instruction set, we can also have jumpnot*
+to test if the flags don't match.
+
