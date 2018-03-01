@@ -1,0 +1,55 @@
+pseudocode style:
+blank line separates routines.
+indent signifies nesting, but the first level is elided.
+comments in parentheses.
+error implies return.
+operations on _number_ unless otherwise stated.
+
+on enter:
+set _number_ and digit count to 0
+set base to 3
+...
+
+on other key press:
+is 0?
+	is first digit?
+	yes:
+		return
+	append 0
+is + or -?
+yes:
+	is base decimal?
+	yes:
+		error
+	append bt digit
+	return
+no:
+	is base decimal?
+	yes:
+		append decimal digit
+		return
+	no:
+		is first digit?
+		yes:
+			set decimal digit
+			set base to 10
+			return
+		is second digit?
+		yes:
+			multiply by decimal digit (makes sign correct)
+			set base to 10
+			return
+		error
+
+append:
+multiply by base
+add digit
+increment digit count
+return
+
+return must be go to main loop, except in append where it must be continue.
+
+data:
+_number_
+base
+digit count

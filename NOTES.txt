@@ -40,7 +40,6 @@ i want my repo to follow the main one.
 i want to branch only when i have a major feature to add.
 	then i *maybe* want the branch to correspond to a new fork on github.
 
->>>>>
 instruction and register extension plans
 	instnew.txt -- attempt at an all-new instruction set
 https://github.com/orgs/SBTCVM/teams/core-devs/discussions/7
@@ -56,6 +55,7 @@ to-do marked with '>'.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 $ trit input
 	$ tritin.tasm
+>>>	$ decin.tasm -- trit and decimal input
 $ stack
 	vital! there is no stack and only single-level return. (continue.tasm)
 	$ stack1.tasm -- base with tests
@@ -69,7 +69,7 @@ dictionary
 	$ dict.tasm
 	$ dict.tests
 	it's heavy going. should have written string comparison separately.
->>>	it's also huge, should test parts separately.
+>	it's also huge, should test parts separately.
 	shelved for the moment.
 string handling
 	../textdocs/SBTCVM-6-trit-Text-encoding.txt
@@ -77,7 +77,7 @@ string handling
 	output to tty -- in dict
 	string comparison -- in dict
 	string copy -- have memcopy in dict
->>	$ string.tasm
+>	$ string.tasm
 	string sanitization -- set the upper trits the same as the :char construct
 		an in-place routine would be much smaller than a sanitizing 'strcopy'.
 	integer<->balanced ternary string conversion
@@ -108,7 +108,7 @@ draw string in graphics mode(s)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 $ character set display
 	chars.tasm
-	> working on paged number:character display.
+>	working on paged number:character display.
 palette in the color framebuffer
 	lots of offsetlen work i'm sure, good practice for 
 	font drawing and other graphic region copying.

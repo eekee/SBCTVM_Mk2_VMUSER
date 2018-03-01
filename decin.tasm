@@ -1,0 +1,192 @@
+# decin -- balanced ternary and decimal number input routines
+# see also decin.design
+
+### limits needs and details:
+
+# namespace:
+#	decin.* key.*
+
+
+gotodata;>decin.init
+
+null;000000000;decin.number
+null;000000000;decin.count
+null;0000000+0;decin.base
+
+null;;decin.digit
+
+setkeyint;:+;decin.init
+keyint;>key.plus
+setkeyint;:-
+keyint;>key.minus
+setkeyint;:enter
+keyint;>key.enter
+
+#	<seq 0 9 | sed 's/(.)/setkeyint;:\1\nkeyint;>key.\1/'
+#[
+setkeyint;:0
+keyint;>key.0
+setkeyint;:1
+keyint;>key.1
+setkeyint;:2
+keyint;>key.2
+setkeyint;:3
+keyint;>key.3
+setkeyint;:4
+keyint;>key.4
+setkeyint;:5
+keyint;>key.5
+setkeyint;:6
+keyint;>key.6
+setkeyint;:7
+keyint;>key.7
+setkeyint;:8
+keyint;>key.8
+setkeyint;:9
+keyint;>key.9
+#]
+
+
+null;;mainloop
+gotodata;>mainloop
+
+
+##########################
+### decin digit processing
+
+setdata;>decin.digit;decin.proc
+setreg2;000000000
+gotodataif;>decin.0
+
+# + and - passed as +++ and ++- resp.
+# otherwise, + and 1 would be the same.
+setreg2;000000+0+
+gotoifgreater;>decin.trit
+
+## 1-9
+romread1;>decin.base
+setreg2;000000+0+
+gotodataif;>decin.append
+
+# base isn't 10
+romread1;>decin.count
+setreg2;000000000
+gotodataif;>decin.makedec0
+setreg2;00000000+
+gotodataif;>decin.makedec1
+gotodata;>decin.error
+
+# on first digit
+romread1;>decin.digit;decin.makedec0
+gotodata;>decin.makedec
+
+# on second digit, use first as sign
+romread1;>decin.number;decin.makedec1
+romread2;>decin.digit
+multiply
+
+setdata;>decin.number;decin.makedec
+setreg1;000000+0+
+setdata;>decin.base
+gotodata;>mainloop
+
+## 0
+romread1;>decin.count;decin.0
+setreg2;000000000
+gotodataif;>mainloop
+gotodata;>decin.append
+
+## + and -
+setreg2;000000++0;decin.trit
+subtract
+setdata;>decin.digit
+romread1;>decin.base
+setreg2;000000+0+
+gotodataif;>decin.error
+
+## all prepared, do the job
+romread1;>decin.number;decin.append
+romread2;>decin.base
+multiply
+romread2;>decin.digit
+add
+setdata;>decin.number
+romread1;>decin.count
+setreg2;00000000+
+add
+setdata;>decin.count
+continue
+
+
+;decin.error
+
+
+;decin.cleanup
+
+
+##########################
+### decin key routines
+
+## enter key
+#>> change to use decin.cleanup & reset the new registers
+romread1;>decin.pressflag;key.enter
+setreg2;000000000
+gotodataif;>decin.null.enter
+romread1;>decin.number
+dumpreg1
+setreg1;000000000
+setdata;>decin.number
+setdata;>decin.pressflag
+TTYwrite;:enter;decin.null.enter
+romread1;>decin.reg1bak
+romread2;>decin.reg2bak
+gotodata;>mainloop
+
+
+TTYwrite;:+;key.plus
+setreg1;000000+++
+gotodata;>decin.proc
+
+TTYwrite;:-;key.minus
+setreg1;000000++-
+gotodata;>decin.proc
+
+TTYwrite;:0;key.0
+setreg1;000000000
+gotodata;>decin.proc
+
+TTYwrite;:1;key.1
+setreg1;00000000+
+gotodata;>decin.proc
+
+TTYwrite;:2;key.2
+setreg1;0000000+-
+gotodata;>decin.proc
+
+TTYwrite;:3;key.3
+setreg1;0000000+0
+gotodata;>decin.proc
+
+TTYwrite;:4;key.4
+setreg1;0000000++
+gotodata;>decin.proc
+
+TTYwrite;:5;key.5
+setreg1;000000+--
+gotodata;>decin.proc
+
+TTYwrite;:6;key.6
+setreg1;000000+-0
+gotodata;>decin.proc
+
+TTYwrite;:7;key.7
+setreg1;000000+-+
+gotodata;>decin.proc
+
+TTYwrite;:8;key.8
+setreg1;000000+0-
+gotodata;>decin.proc
+
+TTYwrite;:9;key.9
+setreg1;000000+00
+gotodata;>decin.proc
