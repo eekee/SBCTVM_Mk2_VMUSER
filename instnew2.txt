@@ -1,21 +1,21 @@
 notes for new 9-trit instruction set
 
 discussion:
-
+https://github.com/orgs/SBTCVM/teams/core-devs/discussions/14
 
 don't forget:
 * stack (can't forget this :)
 * integer division considerations, modulo, divmod
 * muldiv, long-result multiply, maybe mixed-length division
 
-~ most important modes
+~ most important addressing modes
 ~~~~~~~~~~~~~~~~~~~~
 * data value (read-only)
 * address in data
 * address in register
 * the registers, of course
 
-~ other considerations
+~ other addressing mode considerations
 ~~~~~~~~~~~~~~~~~~~~
 * instruction and io spaces needs to be addressed in some way
 * indirect would be nice
@@ -41,10 +41,32 @@ indicate what? which group of modes it's in.
 
 @@@@@@@@@@@@@@@@@@@@@@@@@
 
+[Early plans for a 9-trit instruction set.]
+
 Edit +3,>cat>/dev/snarf
 write introduction below.
 
-...
+I wrote a lot the other day when I was feeling better, but right now I'm not feeling well enough to write a proper introduction or clarification. I hope the gaps in my explanations are not too large. if you're reading it on a mobile device, I apologize for the fixed formatting. This is pretty-much all my thoughts so far, except I'm omitting my foray into a symmetric addressing scheme, it needed too many trits and had too many invalid combinatons. 
+```
+stuff i titled "don't forget":
+* stack (absolutely crucial for many things)
+* integer division considerations, modulo, divmod (modulo is important)
+* muldiv, long-result multiply, maybe mixed-length division 
+	(the middle one may be important)
+
+~ most important addressing modes
+~~~~~~~~~~~~~~~~~~~~
+* data value (read-only)
+* address in data
+* address in register
+* the registers, of course
+
+~ other addressing mode considerations
+~~~~~~~~~~~~~~~~~~~~
+* instruction and io spaces needs to be addressed in some way
+* indirect would be nice
+	* by register and/or by data?
+* indexed would be nice: address is data + register
 
 
 @@@@@@@@@@@@@@@@@@@@@@@@@
@@ -141,13 +163,16 @@ four (groups of) jump instructions.
 representing the flag state as '0':
 	jump
 		unconditional
-	jumpc0
+	jumpifc0
 		test carry flag only
-	jumps0
+	jumpifs0
 		test sign flag only
-	jump00
+	jumpif00
 		test both flags
+		order of operands is sign, carry
+		(could be the other way, of course.
+		 it just needs to be documented clearly.)
 
 if there's room in the instruction set, we can also have jumpnot*
 to test if the flags don't match.
-
+```
