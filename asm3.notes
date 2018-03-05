@@ -1,0 +1,20 @@
+uses string.split() without args to split on whitespace.
+
+maintains a next-instruction address, 
+[exposed as symbol `.'; internally `dot'.
+
+labels occur on a line of their own. 
+a name ending in a colon is a label definition.
+a label definition defines a symbol with the value . had at the point of definition.
+
+__type syntax for single data cells__
+* characters are preceeded by a '
+* decimal starts with a $
+* trits start with a ~
+* symbols start with alphanumerics
+* symbolic character names are symbols, not characters
+
+__other type syntax__
+* should have something for strings and other runs of data
+* instruction space and data space.
+* the former may not be usable until dot is assignable.
