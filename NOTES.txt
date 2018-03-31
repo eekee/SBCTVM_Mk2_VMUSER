@@ -47,7 +47,8 @@ https://github.com/orgs/SBTCVM/teams/core-devs/discussions/7
 tired of the assembler's syntax. 
 things i need to see don't always stand out, especially labels.
 going to write my own assembler if it's easy.
-	asm2.py asm2.notes
+	asm3.py asm3.notes
+might be a better idea to write a very simple compiler.
 
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
