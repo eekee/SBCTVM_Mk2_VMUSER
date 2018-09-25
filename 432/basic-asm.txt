@@ -128,10 +128,17 @@ a dot by prepending the name.
 
 
 init code in inlining:
+
 end each file's init block by jumping via a memory location.
 first file inlined consists of this location, 
 jumps to init code, and updating the location for correct 
 return between each jump.
+
+first instruction in this file should handle 
+return stack underflow.  
+in fact, this should be another updated pointer, 
+first pointing to actual init code which then 
+changes it to point to the error routine.
 
 
 

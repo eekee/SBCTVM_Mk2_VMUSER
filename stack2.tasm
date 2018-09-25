@@ -1,5 +1,10 @@
 # stack routines with simple tests
 
+# differences to stack1:
+#	renames: bstack->dstack, stack->rstack
+#	optimization: top and 2nd of stack are 
+#		held in fixed locations.
+
 # PLAN:
 # memory registers for top and second of stack 
 # would almost certainly improve performance.
@@ -7,17 +12,31 @@
 # TO DO
 #
 # overall:
-#	stack/bstack -> dstack/rstack
+#	stack/bstack -> rstack/dstack
+#		rstack grows down, so underflow means wrap 
+#		to beginning, which could be used to catch 
+#		an underflow.
+#		kept labels:
+#			in test routines (because not important)
+#			stackinit
+#			stackreg1bak
 #	ram registers for top & second of stack
 #		fix to use the ram registers:
 #			base routines 
 #			utility routines 
 #
-# check for old stack names slipping through:
-#	Edit ,y/#.*/x/b[s]tack/=
-#	Edit ,y/#.*/y/stackreg1bak/x/[^a-z][s]tack/=
-# if any found, convert: bstack->dstack, stack->rstack
-# update namespace comment
+
+
+
+# change old stack names: DONE
+#	Edit ,y/#.*/x/b(stack|push|pop)/x/b/c/d/
+#	Edit ,y/#.*/y/stackinit|stackreg1bak/y/textstart(.|\n)+textstop/x/[^a-z](stack|push|pop)/x/[a-z]+/i/r/
+# regexp 'greedy matching' means the above doesn't work.
+#	Edit ,y/#.*/y/stackinit|stackreg1bak/x/[^a-z](stack|push|pop)/x/[a-z]+/i/r/
+# check for old stack names in comments:
+#	Edit ,x/b(stack|push|pop)/=
+# can't really search for the old main stack names without excluding comments:
+#	Edit ,y/#.*/y/stackinit|stackreg1bak/x/[^a-z](stack|push|pop)/=
 
 
 
@@ -27,20 +46,21 @@
 ### limits needs and details:
 
 # namespace:
-#	stack* push pop
+#	stack*
+#	dstack* dpush dpop
 # optional:
-#	bstack* bpush bpop
+#	rstack* rpush rpop
 
 # push and pop reg1 only. use regswap etc. for reg2.
 
 # the routines don't preserve registers because that takes
 # extra space and time and is sometimes unneccessary.
-# the push routines (main and b) save reg1 out of necessity,
+# the push routines save reg1 out of necessity,
 # so if you need to preserve it you can omit the save.
 # restore it like this:
 #	romread1;>stackreg1bak
 
-# "stack" grows down. optional "bstack" grows up.
+# "rstack" grows down. optional "dstack" grows up.
 # "push" is 10 instructions, "pop" 7.
 
 # the size of this file (compared with sbctvm stock troms)
@@ -58,39 +78,38 @@ null;-0-0-0-0-;reg1pat2
 null;0-0-0-0-0;reg2pat2
 
 # stack pointer etc
-null;+++++++++;stackbase
-null;;stacktop
+null;+++++++++;rstackbase
+null;;rstacktop
 null;;stackreg1bak
-null;+++------;bstackbase
-null;;bstacktop
+null;+++------;dstackbase
+null;;dstacktop
 
-# some bstackbase values with space for
+# some dstackbase values with space for
 # the 2 stacks and remaining memory:
 # ++++-----	242		19441	1%
 # +++------	728  		18955	3%
 # ++-------	2186		17497	11%
 # +--------	6560		13123	33% lol
-# better to use a small space and flip the direction of bstack.
 
-# to reverse the direction of bstack, 
+# to reverse the direction of dstack, 
 # change 00000000+ to 00000000- in 3 places:
-# push pop and the line labelled 'bstackdumploop'.
+# push pop and the line labelled 'dstackdumploop'.
 
 
 ############################
 ### initialization
 
-# can't use 'continue' because it calls bpush.
+# can't use 'continue' because it calls dpush.
 
-romread1;>stackbase;stackinit
-setdata;>stacktop
-# if not using bstack omit remainder
-romread1;>bstackbase
-setdata;>bstacktop
-# underflow marker for bstack, may help in debugging;
+romread1;>rstackbase;stackinit
+setdata;>rstacktop
+# if not using dstack omit remainder
+romread1;>dstackbase
+setdata;>dstacktop
+# underflow marker for dstack, may help in debugging;
 # 2 lines doubly optional:
 setreg1;-+-+-+-+-
-gotodata;>bpush
+gotodata;>dpush
 
 
 #######################
@@ -100,21 +119,21 @@ gotodata;>bpush
 
 textstart
 
-Testing main stack
+Testing main rstack
 ~~~~~~~~~~~~~~~~~~
 
-Pre-push data:
+Pre-rpush data:
 textstop
 
 ## push examples:
 romread1;>reg1pat1
 dumpreg1
-gotodata;>push
+gotodata;>rpush
 # you can only push from register 1.
 romread2;>reg2pat1
 dumpreg2
 copy2to1
-gotodata;>push
+gotodata;>rpush
 
 ## some stack examination
 # not basic usage.
@@ -122,16 +141,16 @@ textstart
 
 
 Stack pointer,
-contents of top and base of stack:
+contents of top and base of rstack:
 textstop
-romread1;>stacktop
+romread1;>rstacktop
 dumpreg1
 setreg2;00000000+
 add
 setdata;>sptmp
 romread2;000000000;sptmp
 dumpreg2
-romread1;>stackbase
+romread1;>rstackbase
 setdata;>sptmp2
 romread2;000000000;sptmp2
 dumpreg2
@@ -139,49 +158,48 @@ dumpreg2
 textstart
 
 
-Post-pop data:
+Post-rpop data:
 textstop
 
 ## pop examples:
 # you can only pop to register 1
-gotodata;>pop
+gotodata;>rpop
 copy1to2
 dumpreg2
 
-gotodata;>pop
+gotodata;>rpop
 dumpreg1
 
 TTYwrite;:enter
 userwait
 
 
-# use the b stack in the same way, 
-# but prepend 'b' to the labels.
+# use the d stack in the same way.
 
 textstart
 
-Testing b stack
+Testing d rstack
 ~~~~~~~~~~~~~~~
 
-Pre-push data:
+Pre-rpush data:
 textstop
 romread1;>reg1pat2
 dumpreg1
-gotodata;>bpush
+gotodata;>dpush
 romread2;>reg2pat2
 dumpreg2
 copy2to1
-gotodata;>bpush
+gotodata;>dpush
 
 textstart
 
 
-B stack base and pointer,
-contents of top and second of b stack:
+Data rstack base and pointer,
+contents of top and second of data rstack:
 textstop
-romread1;>bstackbase
+romread1;>dstackbase
 dumpreg1
-romread1;>bstacktop
+romread1;>dstacktop
 dumpreg1
 
 setreg2;00000000-
@@ -190,14 +208,14 @@ setdata;>bsptmp
 romread2;000000000;bsptmp
 dumpreg2
 
-romread1;>bstacktop
+romread1;>dstacktop
 setreg2;0000000-+
 add
 setdata;>bsptmp2
 romread2;000000000;bsptmp2
 dumpreg2
 
-#romread1;>bstackbase
+#romread1;>dstackbase
 #setdata;>bsptmp2
 #romread2;000000000;bsptmp2
 #dumpreg2
@@ -205,12 +223,12 @@ dumpreg2
 textstart
 
 
-Post-pop data:
+Post-rpop data:
 textstop
-gotodata;>bpop
+gotodata;>dpop
 copy1to2
 dumpreg2
-gotodata;>bpop
+gotodata;>dpop
 dumpreg1
 
 
@@ -222,59 +240,59 @@ userwait
 
 textstart
 
-Testing stack dump
+Testing rstack dump
 ~~~~~~~~~~~~~
 
-Loading 4 values into main stack and dumping it:
+Loading 4 values into main rstack and dumping it:
 textstop
 romread1;>reg1pat1
-gotodata;>push
+gotodata;>rpush
 romread1;>reg2pat1
-gotodata;>push
+gotodata;>rpush
 romread1;>reg1pat2
-gotodata;>push
+gotodata;>rpush
 romread1;>reg2pat2
-gotodata;>push
+gotodata;>rpush
 
-romread1;>stacktop
-setreg2;00000000-;stackdumploop
+romread1;>rstacktop
+setreg2;00000000-;rstackdumploop
 subtract
-setdata;>stackdump1
-romread2;000000000;stackdump1
+setdata;>rstackdump1
+romread2;000000000;rstackdump1
 dumpreg2
-romread2;>stackbase
-gotodataif;>stackdumpdone
-gotodata;>stackdumploop
-null;;stackdumpdone
+romread2;>rstackbase
+gotodataif;>rstackdumpdone
+gotodata;>rstackdumploop
+null;;rstackdumpdone
 
 textstart
 
 
-Loading 4 values into B stack and dumping it:
+Loading 4 values into data rstack and dumping it:
 textstop
 romread1;>reg1pat1
-gotodata;>bpush
+gotodata;>dpush
 romread1;>reg2pat1
-gotodata;>bpush
+gotodata;>dpush
 romread1;>reg1pat2
-gotodata;>bpush
+gotodata;>dpush
 romread1;>reg2pat2
-gotodata;>bpush
+gotodata;>dpush
 
-romread1;>bstacktop
-setreg2;00000000+;bstackdumploop
+romread1;>dstacktop
+setreg2;00000000+;dstackdumploop
 subtract
-setdata;>bstackdump1
-romread2;000000000;bstackdump1
+setdata;>dstackdump1
+romread2;000000000;dstackdump1
 dumpreg2
-romread2;>bstackbase
-gotodataif;>bstackdumpdone
-gotodata;>bstackdumploop
-null;;bstackdumpdone
+romread2;>dstackbase
+gotodataif;>dstackdumpdone
+gotodata;>dstackdumploop
+null;;dstackdumpdone
 textstart
 
 
-The fifth value is the underflow flag pushed in initialization.
+The fifth value is the underflow flag rpushed in initialization.
 textstop
 
 TTYwrite;:enter
@@ -288,7 +306,7 @@ stop
 
 # call:
 setreg1;>retpt
-gotodata;>push
+gotodata;>rpush
 gotodata;>subr
 null;;retpt
 
@@ -298,43 +316,43 @@ null;;retpt
 null;;subr
 # ...
 # return:
-gotodata;>pop
+gotodata;>rpop
 gotoreg1
 
 ## to reset the stack, copy stackinit
 
 
 ############################
-### main stack routines
+### main (or return) stack routines
 
 ## push
 # pushes reg1 to the stack
 # trashes reg1, reg2
 
-setdata;>stackreg1bak;push
+setdata;>stackreg1bak;rpush
 
-romread1;>stacktop
-setdata;>stackpushme
+romread1;>rstacktop
+setdata;>rstackpushme
 romread1;>stackreg1bak
-setdata;000000000;stackpushme
+setdata;000000000;rstackpushme
 
-romread1;>stacktop
+romread1;>rstacktop
 setreg2;00000000-
 add
-setdata;>stacktop
+setdata;>rstacktop
 
 continue
 
-## pop
+## rpop
 # pops top of stack into reg1
 # trashes reg2
 
-romread1;>stacktop;pop
+romread1;>rstacktop;rpop
 setreg2;00000000-
 subtract
-setdata;>stacktop
-setdata;>stackpopme
-romread1;000000000;stackpopme
+setdata;>rstacktop
+setdata;>rstackpopme
+romread1;000000000;rstackpopme
 continue
 
 
@@ -346,15 +364,15 @@ continue
 # pushes reg1 to b stack
 # trashes reg1, reg2
 
-setdata;>stackreg1bak;bpush
-romread1;>bstacktop
-setdata;>bstackpushme
+setdata;>stackreg1bak;dpush
+romread1;>dstacktop
+setdata;>dstackpushme
 romread1;>stackreg1bak
-setdata;000000000;bstackpushme
-romread1;>bstacktop
+setdata;000000000;dstackpushme
+romread1;>dstacktop
 setreg2;00000000+
 add
-setdata;>bstacktop
+setdata;>dstacktop
 romread1;>stackreg1bak
 continue
 
@@ -362,12 +380,12 @@ continue
 # pops top of b stack into reg1
 # trashes reg2
 
-romread1;>bstacktop;bpop
+romread1;>dstacktop;dpop
 setreg2;00000000+
 subtract
-setdata;>bstacktop
-setdata;>bstackpopme
-romread1;000000000;bstackpopme
+setdata;>dstacktop
+setdata;>dstackpopme
+romread1;000000000;dstackpopme
 continue
 
 
