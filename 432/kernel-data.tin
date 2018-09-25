@@ -1,0 +1,24 @@
+##############################################
+# kernel data
+
+# '=' in comments equates jonesforth names with those here.
+# many are 386 register names.
+
+# = esi:
+;;codeword-next
+# = eax in interpreting:
+;;codeword-now
+
+# address of QUIT as a sort of codeword;
+# "High-level code without a codeword."
+;<QUIT;cold_start
+
+
+
+# don't need to fill these in here:
+# ebp = return stack pointer.
+
+# equates:
+#??? isn't there some native syntax now?
+# offset from codeword to data in dictionary:
+equ cw-to-data 1

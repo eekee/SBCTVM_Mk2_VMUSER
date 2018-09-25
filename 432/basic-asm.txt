@@ -1,0 +1,148 @@
+432 - a forth for the balanced ternary computer, sbtcvm mk 2
+
+just a port of jonesforth really, using my stack code.
+i'm making no attempt at optimizing for space or speed, 
+because when i try i get confused.
+optimization can come when i'm more 
+familiar with the subject.
+almost no attempt: the new stack code will contain 
+some optimizations.
+
+../stack1.tasm
+../
+
+see also ../forth-plans.txt
+
+including stack1, am i going to rename stack and bstack to 
+dstack and rstack, again?  if so, get code from:
+../dict.tasm
+it would be more fuss to extract that code, 
+but it would be a lot better in use.
+
+
+*** stack mod:
+memory registers for top and second of stack 
+would almost certainly improve performance.
+
+*** stack1 -> stack2:
+make stack2 from stack1, using 
+memory registers for top and second of stack.
+test as before.
+*** i like this.
+
+
+i should make it in multiple files, 
+with a preprocessor in python to expand 
+macros and put them all together.
+hardcode the include order to make it a build script too.
+calling it the builder.
+
+input from ../words.tasm i think, 
+maybe better to define `key` instead.
+
+
+for a later optimization, see ../squashname
+
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@ TO DO
+
+in no particular order
+
+* plan & begin builder
+* import stack
+	dstack rstack type
+* translate jonesforth kernel components
+	kernel.f
+* import some forth
+	keep it literal in a file, 
+	make builder inline it with textstart/stop.
+	i have a note on that somewhere.
+* macro forms of push and pop, if worth it
+	saves 2 instructions.
+
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@ builder
+
+ordering/inlining:
+* stackinit before forthinit
+	stack1 should probably be the first file.
+
+preprocessing:
+* macros
+	* basic macros defined in file
+		with parameters
+	* forth words
+		want name length taken in python
+	* forth asm words - fmac below
+		want name length taken in python
+* equates if needed
+* decimal to trit if needed
+not:
+* whitespace
+	i don't like columnating things,
+	it separates operands from operators and 
+	makes the iasm comments blur into the operands.
+	single spaces are okay, but semicolons are just as good.
+
+~ misc syntax
+~~~~~~~~~~~~~~~~~~
+decimal numbers
+	$456
+equates
+	equ foo $456
+
+~ macro syntax
+~~~~~~~~~~~~~~~~~~
+macro name {
+instruction
+...
+}
+macro name par ... {
+instruction
+...
+}
+forth name {
+name            must be label of a codeword.
+...             EXIT will be added.
+}
+fmac name {
+instruction
+...
+}
+
+braces rather than "endmac" to make it nice to use with 
+my editor.
+
+forth and fmac each place name as a label on the codeword.
+
+basic macros may be used within forth and fmac macros.
+(note that a basic macro for use in a forth macro should 
+only be a list of labels.)
+
+local labels are formed from labels which begin with 
+a dot by prepending the name.
+
+
+
+
+init code in inlining:
+end each file's init block by jumping via a memory location.
+first file inlined consists of this location, 
+jumps to init code, and updating the location for correct 
+return between each jump.
+
+
+
+what about file-local labels?
+
+possibilities:
+1  extra code to handle globals
+2  long labels for inter-file references
+	requires code to recognize them, 
+	which could be misled.
+3  no, just keep using my namespace comments
+
+i think #3 takes the least debugging.
+in the long run, #1 might be better, but not for now.

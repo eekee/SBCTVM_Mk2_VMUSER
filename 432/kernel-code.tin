@@ -1,0 +1,232 @@
+# see kernel-data.tin for register references
+#
+# some jonesforth comments moved to next line.
+#
+# for i386 call and ret always use stack1 based method, 
+# using rstack.
+
+
+#	Edit x/.*/s/^ +([^]+)?/#	\1/
+#	Edit |sed 's/^ +/	/; s/(.*)/#\1/'
+
+##############################################
+# kernel code
+
+#	.macro NEXT
+#	lodsl
+#		reads memory cell addressed by esi into eax,
+#		then increments esi.
+#	jmp *(%eax)
+#		eax points to X. X points to Y. jump to Y.
+#	.endm
+
+# trashes r1 r2 pt
+
+macro NEXT {
+romread1;>codeword-next
+setdata;>codeword-now
+setreg2;$1
+add
+setdata;>codeword-next
+
+romread1;>codeword-now
+ptset
+ptget
+# r1 holds 'X'
+ptset
+ptget
+# r1 holds 'Y'
+gotoreg1
+}
+
+
+
+#	PUSHRSP = rpush
+#	POPRSP = rpop
+
+
+
+#DOCOL:
+#	PUSHRSP %esi        // push %esi on to the return stack
+#	addl $4,%eax        // %eax points to codeword, so make
+#	movl %eax,%esi      // %esi point to first data word
+#	NEXT
+
+romread1;>codeword-next;DOCOL
+gotodata;>rpush
+romread1;>codeword-now
+setreg2;cw-to-data
+add
+setdata;>codeword-next
+NEXT
+
+# 15 instructions including the push.
+
+
+
+#_start:
+#	cld
+#	mov %esp,var_S0
+#// Save the initial data stack pointer in FORTH variable S0.
+#	mov $return_stack_top,%ebp 
+#// Initialise the return stack.
+#	call set_up_data_segment
+#
+#	mov $cold_start,%esi    // Initialise interpreter.
+#	NEXT                    // Run interpreter!
+#
+#	.section .rodata
+#cold_start:           
+#// High-level code without a codeword.
+#	.int QUIT
+
+;;forthinit
+
+# builder will put stackinit before this.
+
+setreg1;>forthinit_ret1
+gotodata;>rpush
+gotodata;>set_up_data_segment
+;;forthinit_ret1
+
+setreg1;<cold_start
+setdata;<codeword-next
+
+# address of QUIT as a sort of codeword;
+# goes in kernel-data.tin
+
+
+
+# built-in forth words
+#
+# time to translate part of a comment from jonesforth, 
+# to show the slight difference in dictionary entries,
+# and how the format translates to tasm.
+#
+# comments to the right of tasm code.
+# abusing textstart to enter literal text
+# and have it converted.
+#
+#	;;DOUBLE_link   "link" -- pointer to previous entry
+#                   label to use in the next entry.
+#	;;              "len" -- name length and flags
+#	textstart
+#	DOUBLE
+#	textstop
+#                   no padding needed 
+#	;>DOCOL;DOUBLE  codeword of this word; label
+#	;>DUP           pointer to codeword of DUP
+#	;>PLUS          pointer to codeword of PLUS
+#	;>EXIT          pointer to codeword of EXIT
+#
+# a complex macro is built into builder.py 
+# to make this easy:
+#
+#	forth DOUBLE {
+#		DUP
+#		PLUS
+#	}
+#
+# EXIT will be added automatically.
+#
+# the link field will also be filled in automatically.
+
+
+
+# flag and length extraction
+#
+# extract from a word which looks like this:
+#	IH----LLL
+# where I and H are flags, L is the length.
+#
+# flags:
+#	I	immediate
+#	H	hidden
+
+# macros for the flags 
+#
+# will jump to dest if the flag at addr matches the trit.
+# destroys r1, r2
+
+macro F_IMMED addr trit dest {
+offsetlen;on,8,1
+romread1;>addr
+offsetlen;off,0,9
+setreg2;+00000000
+divide
+setreg2;trit
+gotodataif;>dest
+}
+
+macro F_HIDDEN addr trit dest {
+offsetlen;on,7,1
+romread1;>addr
+offsetlen;off,0,9
+setreg2;0+0000000
+divide
+setreg2;trit
+gotodataif;>dest
+}
+
+# macro for extracting the length
+#
+# leaves it in r1.
+# limits to 3 trits, forcing name length to be 27 
+# characters or less.  i'm sure we can all live with 
+# this *and* such long names will be terribly slow 
+# to match too. :)
+
+macro LEN addr {
+offsetlen;on,0,3
+romread1;>addr
+offsetlen;off,0,9
+}
+
+
+
+# link and the macro definition belong in builder.py.
+
+
+
+# built-in machine code words
+#
+# another partial translation of a comment from jonesforth, 
+# to show the slight difference in dictionary entries,
+# and how the format translates to tasm.
+#
+# we have no MMU, nor sectioned assembler, 
+# so the code here goes in-line with the definition.
+#
+#	;;DUP_link           "link" -- pointer to previous entry
+#                        label to use in the next entry.
+#	;;                   "len" -- name length and flags
+#	textstart
+#	DUP
+#	textstop
+#                        no padding needed 
+#	;>DUP.code;DUP       codeword of this word; label
+#	instr;...;DUP.code   label added to the first instruction
+#	...                  more instructions
+#	NEXT                 macro as above
+#
+# a complex macro is built into builder.py 
+# to make this easy:
+#
+#	fmac DUP {
+#	instruction
+#	...
+#	}
+#
+# NEXT will be added automatically.
+#
+# the link field will also be filled in automatically.
+#
+# if the first insruction has a local label, 
+# it will be used instead of ".code".
+# it is an error for the first instruction to have 
+# a non-local label.
+
+
+
+# reached line 688.
+# stopped to make stack2
